@@ -417,3 +417,31 @@ export async function updateAccountPreferences(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getAccountByPlayerTag(req, res) {
+    try {
+        const { playerTag } = req.params;
+        
+        const account = await Account.findOne({ playerTag })
+            .populate('buildings')
+            .populate('heroes')
+            .populate('pets')
+            .populate('siege')
+            .populate('spells')
+            .populate('troops')
+            .populate('research')
+            .populate('upgrades');
+        
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+        
+        // Update lastActive timestamp
+        account.lastActive = new Date();
+        await account.save();
+        
+        return res.json(account);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
