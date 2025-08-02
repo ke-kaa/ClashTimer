@@ -296,3 +296,69 @@ export async function deleteAccount(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getAccountStats(req, res) {
+    try {
+        const { id } = req.params;
+        
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+
+        // Get building statistics
+        const buildingStats = await Building.aggregate([
+            { $match: { account: account._id } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    maxed: { $sum: { $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] } },
+                    upgrading: { $sum: { $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        // Get hero statistics
+        const heroStats = await Hero.aggregate([
+            { $match: { account: account._id } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    maxed: { $sum: { $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] } },
+                    upgrading: { $sum: { $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        // Get troop statistics
+        const troopStats = await Troop.aggregate([
+            { $match: { account: account._id } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    maxed: { $sum: { $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] } },
+                    upgrading: { $sum: { $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        return res.json({
+            account: {
+                username: account.username,
+                townHallLevel: account.townHallLevel,
+                clanTag: account.clanTag,
+                lastActive: account.lastActive,
+                totalUpgrades: account.totalUpgrades,
+                preferences: account.preferences
+            },
+            buildings: buildingStats[0] || { total: 0, maxed: 0, upgrading: 0 },
+            heroes: heroStats[0] || { total: 0, maxed: 0, upgrading: 0 },
+            troops: troopStats[0] || { total: 0, maxed: 0, upgrading: 0 }
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
