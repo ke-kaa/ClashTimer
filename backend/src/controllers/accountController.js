@@ -215,3 +215,57 @@ export async function createAccount(req, res) {
         return res.status(400).json({ error: error.message });
     }
 }
+
+export async function updateAccount(req, res) {
+    try {
+        const { id } = req.params;
+        const { username, playerTag, townHallLevel, clanTag, preferences } = req.body;
+
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+
+        if (username) {
+            account.username = username;
+        }
+
+        if (playerTag !== undefined) {
+            // Check if playerTag already exists (if provided and different from current)
+            if (playerTag && playerTag !== account.playerTag) {
+                const existingAccount = await Account.findOne({ playerTag });
+                if (existingAccount) {
+                    return res.status(400).json({ error: 'Player tag already exists' });
+                }
+            }
+            account.playerTag = playerTag;
+        }
+
+        if (townHallLevel !== undefined) {
+            if (!Number.isInteger(townHallLevel) || townHallLevel < 2 || townHallLevel > 17) {
+                return res.status(400).json({ error: 'Invalid town hall level' });
+            }
+            if (townHallLevel !== account.townHallLevel) {
+                return res.status(400).json({ error: 'Changing Town Hall level is not supported yet.' });
+            }
+        }
+
+        if (clanTag !== undefined) {
+            account.clanTag = clanTag;
+        }
+
+        if (preferences) {
+            account.preferences = {
+                ...account.preferences,
+                ...preferences
+            };
+        }
+
+        account.lastActive = new Date();
+        await account.save();
+
+        return res.json(account);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
