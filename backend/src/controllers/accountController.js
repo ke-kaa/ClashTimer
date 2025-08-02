@@ -394,3 +394,26 @@ export async function getAccountsByClan(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function updateAccountPreferences(req, res) {
+    try {
+        const { id } = req.params;
+        const { preferences } = req.body;
+
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+
+        account.preferences = {
+            ...account.preferences,
+            ...preferences
+        };
+        account.lastActive = new Date();
+        await account.save();
+
+        return res.json(account.preferences);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
