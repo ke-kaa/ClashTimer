@@ -269,3 +269,30 @@ export async function updateAccount(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function deleteAccount(req, res) {
+    try {
+        const { id } = req.params;
+        
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+
+        // Delete all associated data
+        await Building.deleteMany({ account: id });
+        await Hero.deleteMany({ account: id });
+        await Pet.deleteMany({ account: id });
+        await Siege.deleteMany({ account: id });
+        await Spell.deleteMany({ account: id });
+        await Troop.deleteMany({ account: id });
+        await Research.deleteMany({ account: id });
+        await Upgrade.deleteMany({ account: id });
+
+        await Account.findByIdAndDelete(id);
+
+        return res.json({ message: 'Account deleted successfully' });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
