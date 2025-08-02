@@ -362,3 +362,35 @@ export async function getAccountStats(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getAccountsByClan(req, res) {
+    try {
+        const { clanTag } = req.params;
+        const { sortBy } = req.query;
+
+        let accounts = await Account.find({ clanTag });
+
+        if (sortBy) {
+            switch (sortBy) {
+                case 'username':
+                    accounts.sort((a, b) => a.username.localeCompare(b.username));
+                    break;
+                case 'townHallLevel':
+                    accounts.sort((a, b) => b.townHallLevel - a.townHallLevel);
+                    break;
+                case 'lastActive':
+                    accounts.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+                    break;
+                case 'totalUpgrades':
+                    accounts.sort((a, b) => b.totalUpgrades - a.totalUpgrades);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return res.json(accounts);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
