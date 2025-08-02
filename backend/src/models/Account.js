@@ -2,7 +2,19 @@ import mongoose, { Schema } from 'mongoose';
 
 const AccountSchema = new Schema({
     icon: { type: String },
-    username: { type: String, required: true, unique: true },
+    username: { type: String, required: true },
+    playerTag: { 
+        type: String, 
+        unique: true, 
+        sparse: true, // Allows null values but ensures uniqueness when present
+        validate: {
+            validator: function(v) {
+                // Player tag should start with # and be 8-9 characters total
+                return !v || /^#[A-Z0-9]{7,8}$/.test(v);
+            },
+            message: 'Player tag must start with # and be 7-8 characters after the # (e.g., #ABC1234)'
+        }
+    },
     townHallLevel: { 
         type: Number, 
         required: true, 
