@@ -81,3 +81,137 @@ export async function getAccountDetail(req, res) {
     }
 }
 
+export async function createAccount(req, res) {
+    try {
+        const { username, playerTag, townHallLevel, clanTag, preferences } = req.body;
+
+        if (!username || !Number.isInteger(townHallLevel) || townHallLevel < 2 || townHallLevel > 17) {
+            return res.status(400).json({ error: 'Invalid username or town hall level.'});
+        }
+
+        // Check if playerTag already exists (if provided)
+        if (playerTag) {
+            const existingAccount = await Account.findOne({ playerTag });
+            if (existingAccount) {
+                return res.status(400).json({ error: 'Player tag already exists' });
+            }
+        }
+
+        const thData = itemsByTownHall[townHallLevel];
+        const account = new Account({
+            username,
+            playerTag: playerTag || null,
+            townHallLevel,
+            clanTag: clanTag || null,
+            lastActive: new Date(),
+            totalUpgrades: 0,
+            preferences: {
+                notifications: preferences?.notifications ?? true,
+                theme: preferences?.theme ?? 'light',
+                language: preferences?.language ?? 'en'
+            }
+        });
+
+        let buildingIds = [], heroIds = [], troopIds = [], petIds = [], siegeIds = [], spellIds = [];
+
+        for (const b of thData.buildingIds) {
+            for (let i = 0; i < b.count; i++){
+                const building = new Building({
+                    icon: b.icon, // the thData file does not contain any link to an icon so set it here after adding icons to an asset folder.
+                    name: b.itemName,
+                    buildingType: b.buildingType || 'Special', // Default to 'Special' if not specified
+                    currentLevel: 0,
+                    maxLevel: b.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await building.save();
+                buildingIds.push(building._id)
+            }
+        }
+
+        for (const h of thData.heroes) {
+            const hero = new Hero({
+                icon: h.icon,
+                name: h.heroName,
+                heroType: h.heroType || h.heroName, // Use heroName as heroType if not specified
+                currentLevel: 0,
+                maxLevel: h.maxLevel,
+                status: 'Idle',
+                account: account._id
+            });
+            await hero.save();
+            heroIds.push(hero._id);
+        }
+
+        for (const p of thData.pets) {
+            const pet = new Pet({
+                icon: p.icon,
+                name: p.petName,
+                petType: p.petType || p.petName, // Use petName as petType if not specified
+                currentLevel: 0,
+                maxLevel: p.maxLevel,
+                status: 'Idle',
+                account: account._id
+            });
+            await pet.save();
+            petIds.push(pet._id);
+        }
+
+        for (const s of thData.sieges) {
+            const siege = new Siege({
+                icon: s.icon,
+                name: s.siegeName,
+                siegeType: s.siegeType || s.siegeName, // Use siegeName as siegeType if not specified
+                currentLevel: 0,
+                maxLevel: s.maxLevel,
+                status: 'Idle',
+                account: account._id
+            });
+            await siege.save();
+            siegeIds.push(siege._id);
+        }
+
+        for (const s of thData.spells) {
+            const spell = new Spell({
+                icon: s.icon,
+                name: s.spellName,
+                spellType: s.spellType || 'Elixir', // Default to 'Elixir' if not specified
+                currentLevel: 0,
+                maxLevel: s.maxLevel,
+                status: 'Idle',
+                account: account._id
+            });
+            await spell.save();
+            spellIds.push(spell._id);
+        }
+
+        for (const t of thData.troops) {
+            const troop = new Troop({
+                icon: t.icon,
+                name: t.troopName,
+                troopType: t.troopType || 'Elixir', // Default to 'Elixir' if not specified
+                currentLevel: 0,
+                maxLevel: t.maxLevel,
+                status: 'Idle',
+                account: account._id
+            });
+            await troop.save();
+            troopIds.push(troop._id);
+        }
+
+        account.buildings = buildingIds;
+        account.heroes = heroIds;
+        account.pets = petIds;
+        account.sieges = siegeIds;
+        account.spells = spellIds;
+        account.troops = troopIds;
+        
+        await account.save();
+
+        return res.status(201).json(account);
+
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+}
