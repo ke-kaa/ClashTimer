@@ -445,3 +445,35 @@ export async function getAccountByPlayerTag(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function searchAccounts(req, res) {
+    try {
+        const { q, type } = req.query; // q = search query, type = 'username' or 'playerTag'
+        
+        if (!q) {
+            return res.status(400).json({ error: 'Search query is required' });
+        }
+
+        let query = {};
+        
+        if (type === 'playerTag') {
+            query.playerTag = { $regex: q, $options: 'i' };
+        } else if (type === 'username') {
+            query.username = { $regex: q, $options: 'i' };
+        } else {
+            // Search both username and playerTag
+            query.$or = [
+                { username: { $regex: q, $options: 'i' } },
+                { playerTag: { $regex: q, $options: 'i' } }
+            ];
+        }
+
+        const accounts = await Account.find(query)
+            .select('username playerTag townHallLevel clanTag lastActive totalUpgrades')
+            .limit(20); // Limit results for performance
+
+        return res.json(accounts);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
