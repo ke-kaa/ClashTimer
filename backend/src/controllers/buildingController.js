@@ -50,3 +50,30 @@ export async function getBuildingsByAccount(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function updateBuildingLevel(req, res) {
+    try {
+        const { id } = req.params;
+        const { currentLevel } = req.body;
+
+        if (currentLevel === undefined || !Number.isInteger(currentLevel) || currentLevel < 0) {
+            return res.status(400).json({ error: 'Invalid current level. Must be a non-negative integer.' });
+        }
+
+        const building = await Building.findById(id);
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+
+        if (currentLevel > building.maxLevel) {
+            return res.status(400).json({ error: 'Current level cannot exceed maximum level' });
+        }
+
+        building.currentLevel = currentLevel;
+        await building.save();
+
+        return res.json(building);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
