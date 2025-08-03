@@ -28,3 +28,15 @@ export async function getAllBuildings(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingById(req, res) {
+    try {
+        const building = await Building.findById(req.params.id).populate('account', 'username townHallLevel');
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+        return res.json(building);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
