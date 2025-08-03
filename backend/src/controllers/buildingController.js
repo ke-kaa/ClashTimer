@@ -77,3 +77,37 @@ export async function updateBuildingLevel(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function startBuildingUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const { upgradeCost, upgradeTime } = req.body;
+        const building = await Building.findById(id);
+        
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+
+        if (building.status === 'Upgrading') {
+            return res.status(400).json({ error: 'Building is already upgrading' });
+        }
+
+        if (building.currentLevel >= building.maxLevel) {
+            return res.status(400).json({ error: 'Building is already at maximum level' });
+        }
+
+        const now = new Date();
+        const upgradeEndTime = new Date(now.getTime() + (upgradeTime || 0) * 1000);
+
+        building.status = 'Upgrading';
+        building.upgradeStartTime = now;
+        building.upgradeEndTime = upgradeEndTime;
+        building.upgradeCost = upgradeCost || 0;
+        building.upgradeTime = upgradeTime || 0;
+        await building.save();
+
+        return res.json(building);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
