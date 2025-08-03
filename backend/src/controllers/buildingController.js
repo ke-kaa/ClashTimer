@@ -40,3 +40,13 @@ export async function getBuildingById(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingsByAccount(req, res) {
+    try {
+        const { accountId } = req.params;
+        const buildings = await Building.find({ account: accountId }).populate('account', 'username townHallLevel');
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
