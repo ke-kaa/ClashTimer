@@ -169,3 +169,24 @@ export async function cancelBuildingUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingsByStatus(req, res) {
+    try {
+        const { status } = req.params;
+        const { accountId } = req.query;
+
+        if (!['Idle', 'Upgrading'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Must be "Idle" or "Upgrading"' });
+        }
+
+        let query = { status };
+        if (accountId) {
+            query.account = accountId;
+        }
+
+        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
