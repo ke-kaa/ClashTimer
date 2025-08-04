@@ -207,3 +207,22 @@ export async function getBuildingsByType(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getUpgradeableBuildings(req, res) {
+    try {
+        const { accountId } = req.query;
+        let query = { 
+            currentLevel: { $lt: { $expr: '$maxLevel' } },
+            status: 'Idle'
+        };
+        
+        if (accountId) {
+            query.account = accountId;
+        }
+
+        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
