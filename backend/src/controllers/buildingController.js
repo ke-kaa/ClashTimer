@@ -190,3 +190,20 @@ export async function getBuildingsByStatus(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingsByType(req, res) {
+    try {
+        const { buildingType } = req.params;
+        const { accountId } = req.query;
+
+        let query = { name: { $regex: buildingType, $options: 'i' } };
+        if (accountId) {
+            query.account = accountId;
+        }
+
+        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
