@@ -290,3 +290,22 @@ export async function getBuildingsByBuildingType(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getUpgradingBuildings(req, res) {
+    try {
+        const { accountId } = req.query;
+        let query = { status: 'Upgrading' };
+        
+        if (accountId) {
+            query.account = accountId;
+        }
+
+        const buildings = await Building.find(query)
+            .populate('account', 'username townHallLevel')
+            .sort({ upgradeEndTime: 1 }); // Sort by completion time
+
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
