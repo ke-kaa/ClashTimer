@@ -244,3 +244,28 @@ export async function getMaxedBuildings(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function validateBuildingUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const building = await Building.findById(id);
+        
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+
+        const canUpgrade = building.status === 'Idle' && building.currentLevel < building.maxLevel;
+        
+        return res.json({
+            canUpgrade,
+            currentLevel: building.currentLevel,
+            maxLevel: building.maxLevel,
+            status: building.status,
+            reason: canUpgrade ? 'Building can be upgraded' : 
+                building.status === 'Upgrading' ? 'Building is currently upgrading' :
+                building.currentLevel >= building.maxLevel ? 'Building is at maximum level' : 'Unknown reason'
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
