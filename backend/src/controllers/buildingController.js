@@ -333,3 +333,33 @@ export async function getReadyBuildings(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingUpgradeProgress(req, res) {
+    try {
+        const { id } = req.params;
+        const building = await Building.findById(id);
+        
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+
+        if (building.status !== 'Upgrading') {
+            return res.status(400).json({ error: 'Building is not currently upgrading' });
+        }
+
+        const now = new Date();
+        const totalTime = building.upgradeTime * 1000; // Convert to milliseconds
+        const elapsedTime = now.getTime() - building.upgradeStartTime.getTime();
+        const progress = Math.min(100, Math.max(0, (elapsedTime / totalTime) * 100));
+        const timeRemaining = Math.max(0, building.upgradeEndTime.getTime() - now.getTime());
+
+        return res.json({
+            building: building,
+            progress: Math.round(progress),
+            timeRemaining: Math.round(timeRemaining / 1000), // in seconds
+            isReady: timeRemaining <= 0
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
