@@ -145,3 +145,27 @@ export async function completeBuildingUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function cancelBuildingUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const building = await Building.findById(id);
+        
+        if (!building) {
+            return res.status(404).json({ error: 'Building not found' });
+        }
+
+        if (building.status !== 'Upgrading') {
+            return res.status(400).json({ error: 'Building is not currently upgrading' });
+        }
+
+        building.status = 'Idle';
+        building.upgradeStartTime = null;
+        building.upgradeEndTime = null;
+        await building.save();
+
+        return res.json(building);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
