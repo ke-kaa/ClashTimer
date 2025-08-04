@@ -363,3 +363,64 @@ export async function getBuildingUpgradeProgress(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingStats(req, res) {
+    try {
+        const { accountId } = req.params;
+        
+        const stats = await Building.aggregate([
+            { $match: { account: new mongoose.Types.ObjectId(accountId) } },
+            {
+                $group: {
+                    _id: null,
+                    totalBuildings: { $sum: 1 },
+                    maxedBuildings: { 
+                        $sum: { 
+                            $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] 
+                        } 
+                    },
+                    upgradingBuildings: { 
+                        $sum: { 
+                            $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] 
+                        } 
+                    },
+                    idleBuildings: { 
+                        $sum: { 
+                            $cond: [{ $eq: ['$status', 'Idle'] }, 1, 0] 
+                        } 
+                    },
+                    totalUpgrades: { $sum: '$currentLevel' }
+                }
+            }
+        ]);
+
+        const buildingTypeStats = await Building.aggregate([
+            { $match: { account: new mongoose.Types.ObjectId(accountId) } },
+            {
+                $group: {
+                    _id: '$buildingType',
+                    count: { $sum: 1 },
+                    maxed: { 
+                        $sum: { 
+                            $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] 
+                        } 
+                    }
+                }
+            }
+        ]);
+
+        return res.json({
+            overall: stats[0] || {
+                totalBuildings: 0,
+                maxedBuildings: 0,
+                upgradingBuildings: 0,
+                idleBuildings: 0,
+                totalUpgrades: 0
+            },
+            byType: buildingTypeStats
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: error.message });
+    }
+}
