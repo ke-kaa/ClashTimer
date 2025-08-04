@@ -269,3 +269,24 @@ export async function validateBuildingUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getBuildingsByBuildingType(req, res) {
+    try {
+        const { buildingType } = req.params;
+        const { accountId } = req.query;
+
+        if (!['Resource', 'Defense', 'Army', 'Storage', 'Wall', 'Trap', 'Special'].includes(buildingType)) {
+            return res.status(400).json({ error: 'Invalid building type' });
+        }
+
+        let query = { buildingType };
+        if (accountId) {
+            query.account = accountId;
+        }
+
+        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        return res.json(buildings);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
