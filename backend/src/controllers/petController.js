@@ -240,6 +240,7 @@ export async function startPetUpgrade(req, res) {
 }
 
 // progress in % - it uses the user input time not the actual time of the official clash of clans upgrade 
+// future improvement (too lazy to implement now) - the progress status (percentage) should be based on some config file containig the actual upgrade time
 export async function getPetUpgradeStatus(req, res) {
 	try {
 		const petId = req.params.id || req.query.petId;
@@ -265,3 +266,38 @@ export async function getPetUpgradeStatus(req, res) {
 		return res.status(400).json({ error: err.message });
 	}
 }
+
+export async function finishPetUpgrade(req, res) {
+	try {
+		const { petId } = req.body;
+		if (!petId) return res.status(400).json({ error: 'petId required' });
+		const pet = await Pet.findById(petId);
+		if (!pet) return res.status(404).json({ error: 'Pet not found' });
+		if (pet.status !== 'Upgrading') return res.status(400).json({ error: 'Pet not upgrading' });
+		if (!pet.upgradeEndTime || Date.now() < pet.upgradeEndTime.getTime()) {
+			return res.status(400).json({ error: 'Upgrade not yet complete' });
+		}
+		// Apply upgrade
+		pet.currentLevel += 1;
+		pet.status = 'Idle';
+		pet.upgradeStartTime = null;
+		pet.upgradeEndTime = null;
+		pet.upgradeCost = 0;
+		pet.upgradeTime = 0;
+		await pet.save();
+		return res.json(pet);
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+}
+
+export default {
+	getPets,
+	getPet,
+	unlockPet,
+	assignPetToHero,
+	unassignPet,
+	startPetUpgrade,
+	getPetUpgradeStatus,
+	finishPetUpgrade,
+};
