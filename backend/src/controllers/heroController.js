@@ -39,3 +39,24 @@ export async function getHeroById(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+// Update hero level (direct set)
+export async function updateHeroLevel(req, res) {
+    try {
+        const { id } = req.params;
+        const { currentLevel } = req.body;
+        if (currentLevel === undefined || !Number.isInteger(currentLevel) || currentLevel < 0) {
+            return res.status(400).json({ error: 'Invalid current level' });
+        }
+
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        if (currentLevel > hero.maxLevel) return res.status(400).json({ error: 'Current level cannot exceed max level' });
+
+        hero.currentLevel = currentLevel;
+        await hero.save();
+        return res.json(hero);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
