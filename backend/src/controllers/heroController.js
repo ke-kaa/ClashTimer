@@ -142,3 +142,27 @@ export async function getHeroesByStatus(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getHeroUpgradeProgress(req, res) {
+    try {
+        const { id } = req.params;
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        if (hero.status !== 'Upgrading') return res.status(400).json({ error: 'Hero is not currently upgrading' });
+
+        const now = new Date();
+        const totalMs = (hero.upgradeTime || 0) * 1000;
+        const elapsed = now.getTime() - (hero.upgradeStartTime?.getTime() || now.getTime());
+        const progress = totalMs > 0 ? Math.min(100, Math.max(0, (elapsed / totalMs) * 100)) : 0;
+        const remaining = Math.max(0, (hero.upgradeEndTime?.getTime() || now.getTime()) - now.getTime());
+
+        return res.json({
+            hero,
+            progress: Math.round(progress),
+            timeRemaining: Math.round(remaining / 1000),
+            isReady: remaining <= 0
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
