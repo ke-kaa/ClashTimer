@@ -84,3 +84,29 @@ export async function startHeroUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+// increments level by 1
+export async function completeHeroUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        if (hero.status !== 'Upgrading') return res.status(400).json({ error: 'Hero is not currently upgrading' });
+        if (hero.currentLevel >= hero.maxLevel) return res.status(400).json({ error: 'Hero is already at maximum level' });
+
+        hero.currentLevel += 1;
+        hero.status = 'Idle';
+        hero.upgradeStartTime = null;
+        hero.upgradeEndTime = null;
+        hero.upgradeCost = 0;
+        hero.upgradeTime = 0;
+        await hero.save();
+
+        await Account.findByIdAndUpdate(hero.account, { $inc: { totalUpgrades: 1 } });
+
+        return res.json(hero);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
