@@ -126,3 +126,19 @@ export async function cancelHeroUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getHeroesByStatus(req, res) {
+    try {
+        const { status } = req.params;
+        const { accountId } = req.query;
+        if (!['Idle', 'Upgrading'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        const query = { status };
+        if (accountId) query.account = accountId;
+        const heroes = await Hero.find(query).populate('account', 'username townHallLevel');
+        return res.json(heroes);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
