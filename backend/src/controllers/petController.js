@@ -137,3 +137,33 @@ export async function unlockPet(req, res) {
 		return res.status(500).json({ error: err.message });
 	}
 }
+
+export async function assignPetToHero(req, res) {
+    try {
+        const { petId, heroId } = req.body;
+        if (!petId || !heroId) return res.status(400).json({ error: 'petId and heroId required' });
+        const pet = await Pet.findById(petId);
+        if (!pet) return res.status(404).json({ error: 'Pet not found' });
+        if (pet.status === 'Upgrading') return res.status(400).json({ error: 'Cannot assign while upgrading' });
+        if (pet.assignedHero) return res.status(409).json({ error: 'Pet already assigned' });
+
+		// Load account to confirm hero ownership (using pet.account reference)
+		const account = await Account.findById(pet.account).select('heroes');
+		if (!account) return res.status(404).json({ error: 'Account not found for pet' });
+
+		const hero = await Hero.findById(heroId);
+		if (!hero) return res.status(404).json({ error: 'Hero not found' });
+
+		// Check hero is listed under this account's heroes array
+		const heroOwned = account.heroes.some(h => h.toString() === heroId.toString());
+		if (!heroOwned) {
+			return res.status(403).json({ error: 'Hero does not belong to this account' });
+		}
+
+		pet.assignedHero = heroId;
+		await pet.save();
+		return res.json(pet);
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+}
