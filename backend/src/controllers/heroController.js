@@ -110,3 +110,19 @@ export async function completeHeroUpgrade(req, res) {
     }
 }
 
+export async function cancelHeroUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        if (hero.status !== 'Upgrading') return res.status(400).json({ error: 'Hero is not currently upgrading' });
+
+        hero.status = 'Idle';
+        hero.upgradeStartTime = null;
+        hero.upgradeEndTime = null;
+        await hero.save();
+        return res.json(hero);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
