@@ -18,3 +18,13 @@ export async function getAllHeroes(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getHeroesByAccount(req, res) {
+    try {
+        const { accountId } = req.params;
+        const heroes = await Hero.find({ account: accountId }).populate('account', 'username townHallLevel');
+        return res.json(heroes);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
