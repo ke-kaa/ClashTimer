@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const HeroSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     heroType: { 
         type: String, 

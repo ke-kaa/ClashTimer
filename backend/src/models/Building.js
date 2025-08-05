@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const BuildingSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     buildingType: { 
         type: String, 

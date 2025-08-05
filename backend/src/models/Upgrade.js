@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const UpgradeSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     currentLevel: { 
         type: Number, 

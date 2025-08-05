@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const SpellSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     spellType: { 
         type: String, 

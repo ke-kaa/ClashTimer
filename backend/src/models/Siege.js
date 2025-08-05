@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const SiegeSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     siegeType: { 
         type: String, 

@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const PetResearchSchema = new Schema({
-    icon: { type: String },
     name: { type: String, required: true },
     petType: { 
         type: String, 

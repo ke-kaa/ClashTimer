@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
 const AccountSchema = new Schema({
-    icon: { type: String },
     username: { type: String, required: true },
     playerTag: { 
         type: String, 
