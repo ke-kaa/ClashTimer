@@ -167,3 +167,17 @@ export async function assignPetToHero(req, res) {
         return res.status(400).json({ error: err.message });
     }
 }
+
+export async function unassignPet(req, res) {
+	try {
+		const { petId } = req.body;
+		if (!petId) return res.status(400).json({ error: 'petId required' });
+		const pet = await Pet.findById(petId);
+		if (!pet) return res.status(404).json({ error: 'Pet not found' });
+		pet.assignedHero = null;
+		await pet.save();
+		return res.json(pet);
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+}
