@@ -171,9 +171,21 @@ export async function assignPetToHero(req, res) {
 export async function unassignPet(req, res) {
 	try {
 		const { petId } = req.body;
+		const accountId = resolveAccountId(req); // optional but used for ownership validation if provided
 		if (!petId) return res.status(400).json({ error: 'petId required' });
+
 		const pet = await Pet.findById(petId);
 		if (!pet) return res.status(404).json({ error: 'Pet not found' });
+
+		// Ownership check (if caller passed an accountId ensure it matches pet.account)
+		if (accountId && pet.account.toString() !== accountId.toString()) {
+			return res.status(403).json({ error: 'Pet does not belong to this account' });
+		}
+
+		if (!pet.assignedHero) {
+			return res.status(409).json({ error: 'Pet already unassigned' });
+		}
+
 		pet.assignedHero = null;
 		await pet.save();
 		return res.json(pet);
