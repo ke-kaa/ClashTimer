@@ -1,0 +1,20 @@
+import Hero from '../models/Hero.js';
+import Account from '../models/Account.js';
+
+// Get all heroes (optional filters via query)
+export async function getAllHeroes(req, res) {
+    try {
+        const { accountId, status, heroType, name } = req.query;
+        const query = {};
+
+        if (accountId) query.account = accountId;
+        if (status && ['Idle', 'Upgrading'].includes(status)) query.status = status;
+        if (heroType) query.heroType = heroType;
+        if (name) query.name = { $regex: name, $options: 'i' };
+
+        const heroes = await Hero.find(query).populate('account', 'username townHallLevel');
+        return res.json(heroes);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
