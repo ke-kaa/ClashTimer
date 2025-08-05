@@ -193,3 +193,48 @@ export async function unassignPet(req, res) {
 		return res.status(400).json({ error: err.message });
 	}
 }
+
+export async function startPetUpgrade(req, res) {
+	try {
+		const { petId, upgradeTimeSec, upgradeCost } = req.body;
+		if (!petId) return res.status(400).json({ error: 'petId required' });
+		if (upgradeTimeSec === undefined || upgradeTimeSec === null) {
+			return res.status(400).json({ error: 'upgradeTimeSec required (seconds)' });
+		}
+		const timeNum = Number(upgradeTimeSec);
+		if (!Number.isFinite(timeNum) || timeNum < 0) {
+			return res.status(400).json({ error: 'upgradeTimeSec must be a non-negative number' });
+		}
+		const pet = await Pet.findById(petId);
+		if (!pet) return res.status(404).json({ error: 'Pet not found' });
+		if (pet.status === 'Upgrading') return res.status(409).json({ error: 'Pet already upgrading' });
+		if (pet.currentLevel >= pet.maxLevel) return res.status(400).json({ error: 'Pet already at max level' });
+
+		// If time is zero, perform instant upgrade and return
+		if (timeNum === 0) {
+			pet.currentLevel += 1;
+			if (pet.currentLevel >= pet.maxLevel) {
+				pet.currentLevel = pet.maxLevel; // clamp
+			}
+			pet.status = 'Idle';
+			pet.upgradeStartTime = null;
+			pet.upgradeEndTime = null;
+			pet.upgradeTime = 0;
+			pet.upgradeCost = Number(upgradeCost) || 0;
+			await pet.save();
+			return res.json({ pet, instant: true });
+		}
+
+		const now = new Date();
+		const end = new Date(now.getTime() + timeNum * 1000);
+		pet.status = 'Upgrading';
+		pet.upgradeStartTime = now;
+		pet.upgradeEndTime = end;
+		pet.upgradeCost = Number(upgradeCost) || 0;
+		pet.upgradeTime = timeNum;
+		await pet.save();
+		return res.json(pet);
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+}
