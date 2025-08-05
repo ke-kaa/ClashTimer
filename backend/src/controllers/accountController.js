@@ -117,7 +117,6 @@ export async function createAccount(req, res) {
         for (const b of thData.buildingIds) {
             for (let i = 0; i < b.count; i++){
                 const building = new Building({
-                    icon: b.icon, // the thData file does not contain any link to an icon so set it here after adding icons to an asset folder.
                     name: b.itemName,
                     buildingType: b.buildingType || 'Special', // Default to 'Special' if not specified
                     currentLevel: 0,
@@ -132,7 +131,6 @@ export async function createAccount(req, res) {
 
         for (const h of thData.heroes) {
             const hero = new Hero({
-                icon: h.icon,
                 name: h.heroName,
                 heroType: h.heroType || h.heroName, // Use heroName as heroType if not specified
                 currentLevel: 0,
@@ -146,7 +144,6 @@ export async function createAccount(req, res) {
 
         for (const p of thData.pets) {
             const pet = new Pet({
-                icon: p.icon,
                 name: p.petName,
                 petType: p.petType || p.petName, // Use petName as petType if not specified
                 currentLevel: 0,
@@ -160,7 +157,6 @@ export async function createAccount(req, res) {
 
         for (const s of thData.sieges) {
             const siege = new Siege({
-                icon: s.icon,
                 name: s.siegeName,
                 siegeType: s.siegeType || s.siegeName, // Use siegeName as siegeType if not specified
                 currentLevel: 0,
@@ -174,7 +170,6 @@ export async function createAccount(req, res) {
 
         for (const s of thData.spells) {
             const spell = new Spell({
-                icon: s.icon,
                 name: s.spellName,
                 spellType: s.spellType || 'Elixir', // Default to 'Elixir' if not specified
                 currentLevel: 0,
@@ -188,7 +183,6 @@ export async function createAccount(req, res) {
 
         for (const t of thData.troops) {
             const troop = new Troop({
-                icon: t.icon,
                 name: t.troopName,
                 troopType: t.troopType || 'Elixir', // Default to 'Elixir' if not specified
                 currentLevel: 0,
