@@ -28,3 +28,14 @@ export async function getHeroesByAccount(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getHeroById(req, res) {
+    try {
+        const { id } = req.params;
+        const hero = await Hero.findById(id).populate('account', 'username townHallLevel');
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        return res.json(hero);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
