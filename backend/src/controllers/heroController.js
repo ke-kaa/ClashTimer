@@ -60,3 +60,27 @@ export async function updateHeroLevel(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function startHeroUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const { upgradeCost, upgradeTime } = req.body; // seconds
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        if (hero.status === 'Upgrading') return res.status(400).json({ error: 'Hero is already upgrading' });
+        if (hero.currentLevel >= hero.maxLevel) return res.status(400).json({ error: 'Hero is already at maximum level' });
+
+        const now = new Date();
+        const end = new Date(now.getTime() + (upgradeTime || 0) * 1000);
+        hero.status = 'Upgrading';
+        hero.upgradeStartTime = now;
+        hero.upgradeEndTime = end;
+        hero.upgradeCost = upgradeCost || 0;
+        hero.upgradeTime = upgradeTime || 0;
+        await hero.save();
+
+        return res.json(hero);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
