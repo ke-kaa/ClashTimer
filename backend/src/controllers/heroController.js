@@ -166,3 +166,20 @@ export async function getHeroUpgradeProgress(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function validateHeroUpgrade(req, res) {
+    try {
+        const { id } = req.params;
+        const hero = await Hero.findById(id);
+        if (!hero) return res.status(404).json({ error: 'Hero not found' });
+        const canUpgrade = hero.status === 'Idle' && hero.currentLevel < hero.maxLevel;
+        return res.json({
+            canUpgrade,
+            currentLevel: hero.currentLevel,
+            maxLevel: hero.maxLevel,
+            status: hero.status
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
