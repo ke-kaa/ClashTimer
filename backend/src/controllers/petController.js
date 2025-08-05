@@ -238,3 +238,30 @@ export async function startPetUpgrade(req, res) {
 		return res.status(400).json({ error: err.message });
 	}
 }
+
+// progress in % - it uses the user input time not the actual time of the official clash of clans upgrade 
+export async function getPetUpgradeStatus(req, res) {
+	try {
+		const petId = req.params.id || req.query.petId;
+		if (!petId) return res.status(400).json({ error: 'pet id required' });
+		const pet = await Pet.findById(petId);
+		if (!pet) return res.status(404).json({ error: 'Pet not found' });
+		if (pet.status !== 'Upgrading' || !pet.upgradeStartTime || !pet.upgradeEndTime) {
+			return res.json({ petId: pet._id, status: pet.status, progress: pet.status === 'Idle' ? 100 : 0 });
+		}
+		const now = Date.now();
+		const total = pet.upgradeEndTime.getTime() - pet.upgradeStartTime.getTime();
+		const elapsed = Math.min(now - pet.upgradeStartTime.getTime(), total);
+		const percent = total > 0 ? Math.round((elapsed / total) * 100) : 0;
+		const finished = now >= pet.upgradeEndTime.getTime();
+		return res.json({
+			petId: pet._id,
+			status: finished ? 'Finished (pending finalize)' : pet.status,
+			progress: finished ? 100 : percent,
+			remainingSeconds: finished ? 0 : Math.max(0, Math.ceil((pet.upgradeEndTime.getTime() - now)/1000)),
+			endsAt: pet.upgradeEndTime,
+		});
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+}
