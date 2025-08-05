@@ -183,3 +183,14 @@ export async function validateHeroUpgrade(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export async function getTopHeroes(req, res) {
+    try {
+        const { accountId } = req.params;
+        const heroes = await Hero.find({ account: accountId })
+            .sort({ currentLevel: -1, name: 1 });
+        return res.json(heroes);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
