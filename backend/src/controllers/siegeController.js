@@ -50,6 +50,15 @@ export async function unlockSiege(req, res) {
         const siege = await unlockSiegeService({ accountId, input })
         return res.status(201).json(siege);
     } catch (e) {
+        if (e.message === "Account not found"){
+            return res.status(404).json({ error: e.message });
+        }
+        if (e.message === "Siege already unlocked"){
+            return res.status(409).json({ error: e.message });
+        }
+        if (e.message === "Siege not available at this Town Hall") {
+            return res.status(404).json({ error: e.message, availableSieges: e.availableSieges })
+        }
         console.log(e.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
