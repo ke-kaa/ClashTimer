@@ -1,6 +1,6 @@
 import Siege from '../models/Siege.js';
 import Account from '../models/Account.js';
-import { unlockSiegeService } from '../services/siegeService.js';
+import { unlockSiegeService, getSiegeUpgradeStatus } from '../services/siegeService.js';
 
 export async function getSiegesByAccountId(req, res) {
     try {
@@ -49,6 +49,25 @@ export async function unlockSiege(req, res) {
         const siege = await unlockSiegeService({ accountId, input })
         return res.status(201).json(siege);
     } catch (e) {
-        return res.status(500).json({ error: e.message });
+        console.log(e.message)
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+}
+
+
+export async function getSiegeUpgradeStatus(req, res, next) {
+    try {
+        const { id } = req.params;
+        const siege = await Siege.findById(id);
+
+        if (!siege) {
+            return res.status(404).json({ error: 'Siege not found' });
+        }
+
+        const status = getSiegeUpgradeStatus(siege);
+        res.json(status);
+    } catch (err) {
+        console.log(e.message)
+        return res.status(500).json({ error: 'Internal server error.' });
     }
 }
