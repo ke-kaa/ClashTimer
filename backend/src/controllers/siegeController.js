@@ -1,6 +1,7 @@
 import Siege from '../models/Siege.js';
 import Account from '../models/Account.js';
-import { unlockSiegeService, getSiegeUpgradeStatus } from '../services/siegeService.js';
+import { unlockSiegeService, getSiegeUpgradeStatus, startSiegeUpgradeService } from '../services/siegeService.js';
+
 
 export async function getSiegesByAccountId(req, res) {
     try {
@@ -54,7 +55,6 @@ export async function unlockSiege(req, res) {
     }
 }
 
-
 export async function getSiegeUpgradeStatus(req, res, next) {
     try {
         const { id } = req.params;
@@ -69,5 +69,30 @@ export async function getSiegeUpgradeStatus(req, res, next) {
     } catch (err) {
         console.log(e.message)
         return res.status(500).json({ error: 'Internal server error.' });
+    }
+}
+
+export async function startSiegeUpgrade(req, res) {
+    try {
+        const { siegeId, upgradeTimeSec, upgradeCost = 0 } = req.body;
+
+        if (!siegeId) {
+        return res.status(400).json({ error: 'siegeId required' });
+        }
+        if (upgradeTimeSec == null || isNaN(upgradeTimeSec) || upgradeTimeSec < 0) {
+        return res.status(400).json({ error: 'upgradeTimeSec must be >= 0' });
+        }
+
+        const result = await startSiegeUpgradeService(siegeId, upgradeTimeSec, upgradeCost);
+        return res.json(result);
+    } catch (e) {
+        if (e.message === 'Siege not found') {
+        return res.status(404).json({ error: e.message });
+        }
+        if (e.message.includes('already upgrading') || e.message.includes('max level')) {
+        return res.status(409).json({ error: e.message });
+        }
+        console.log(e.message)
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
