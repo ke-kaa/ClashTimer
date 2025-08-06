@@ -1,6 +1,6 @@
 import Siege from '../models/Siege.js';
 import Account from '../models/Account.js';
-import { unlockSiegeService, getSiegeUpgradeStatus, startSiegeUpgradeService } from '../services/siegeService.js';
+import { unlockSiegeService, getSiegeUpgradeStatus, startSiegeUpgradeService, finishSiegeUpgradeService } from '../services/siegeService.js';
 
 
 export async function getSiegesByAccountId(req, res) {
@@ -33,7 +33,7 @@ export async function getSiegeById(req, res) {
 
         return res.json(siege);
     } catch (e) {
-        console.log(e.message)
+        console.log(e.message);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -50,7 +50,7 @@ export async function unlockSiege(req, res) {
         const siege = await unlockSiegeService({ accountId, input })
         return res.status(201).json(siege);
     } catch (e) {
-        console.log(e.message)
+        console.log(e.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
 }
@@ -67,7 +67,7 @@ export async function getSiegeUpgradeStatus(req, res, next) {
         const status = getSiegeUpgradeStatus(siege);
         res.json(status);
     } catch (err) {
-        console.log(e.message)
+        console.log(e.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
 }
@@ -92,7 +92,23 @@ export async function startSiegeUpgrade(req, res) {
         if (e.message.includes('already upgrading') || e.message.includes('max level')) {
         return res.status(409).json({ error: e.message });
         }
-        console.log(e.message)
+        console.log(e.message);
         return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function finishSiegeUpgrade(req, res, next) {
+    try {
+        const { siegeId } = req.body;
+        if (!siegeId) return res.status(400).json({ error: 'siegeId required' });
+
+        const siege = await finishSiegeUpgradeService(siegeId);
+        res.json({ siege, finished: true });
+    } catch (e) {
+        if (e.message = "Siege not found"){
+            return res.status(404).json({ error: e.message });
+        }
+        console.log(e.message);
+        return res.status(500).json({ error: 'Internal server error.'})
     }
 }
