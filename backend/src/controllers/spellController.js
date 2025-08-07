@@ -78,6 +78,24 @@ export async function startSpellUpgradeController(req, res) {
         const result = await startSpellUpgradeService(spellId, upgradeTimeSec, upgradeCost);
         return res.json(result)
     } catch (err) {
-        return res.status(500).json({ message: 'Failed to start upgrade', error: err?.message });
+        if (err.message == 'Spell not found') return res.status(404).json({ error: err.message });
+        console.log(err.message)
+        return res.status(500).json({ message: 'Failed to start upgrade'});
+    }
+}
+
+export async function finishSpellUpgradeController(req, res, next) {
+    try {
+        const { spellId } = req.body;
+        if (!spellId) return res.status(400).json({ error: 'siegeId required' });
+
+        const spell = await finishSpellUpgradeService(siegeId);
+        res.json({ siege, finished: true });
+    } catch (e) {
+        if (e.message = "Siege not found"){
+            return res.status(404).json({ error: e.message });
+        }
+        console.log(e.message);
+        return res.status(500).json({ error: 'Internal server error.'})
     }
 }
