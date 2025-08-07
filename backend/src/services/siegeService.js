@@ -59,3 +59,14 @@ export async function unlockSiegeService({ accountId, input }) {
 
     return siege;
 }
+
+export function getSiegeUpgradeStatus(siege) {
+    return computeUpgradeStatus(siege);
+}
+
+export async function startSiegeUpgradeService(siegeId, upgradeTimeSec, upgradeCost) {
+    const siege = await Siege.findById(siegeId);
+    if (!siege) throw new Error('Siege not found');
+
+    return await startUpgrade(siege, upgradeTimeSec, upgradeCost);
+}
