@@ -70,3 +70,16 @@ export async function createSpellService({ accountId, name, spellName, currentLe
 export async function getSpellsByAccount({ accountId }) {
     return await Spell.find({ accoun: accountId }).sort({ createdAt: -1 });
 }
+
+export async function getSpellByIdService(id) {
+    if (!isId(id)) {
+        throw { status: 400, message: 'Invalid spell id' };
+    }
+
+    const spell = await Spell.findById(id).populate('account');
+    if (!spell) {
+        throw { status: 404, message: 'Spell not found' };
+    }
+
+    return spell;
+}

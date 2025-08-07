@@ -30,3 +30,24 @@ export async function getSpellsController(req, res) {
         });
     }
 }
+
+export async function getSpellById(req, res) {
+    try {
+        const spell = await getSpellByIdService(req.params.id);
+
+        if (spell.account.toString() !== req.user.id) {
+            throw { status: 403, message: 'Forbidden: You cannot access this spell' };
+        }
+
+        return res.json(spell);
+    } catch (err) {
+
+        if ( err.message === "Forbidden: You cannot access this spell" ){
+            return res.status(404).json({ error: err.message });
+        }
+        
+        return res
+            .status(err?.status || 500)
+            .json({ message: err?.message || 'Failed to fetch spell' });
+    }
+}
