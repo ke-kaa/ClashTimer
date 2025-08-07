@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Spell from '../models/Spell.js';
-
-import { createSpellService, getSpellsByAccount } from '../services/spellService.js';
+import { startUpgrade } from '../utils/upgradeUtils.js';
+import { createSpellService, getSpellsByAccountService, deleteSpellService } from '../services/spellService.js';
 
 export async function createSpellController(req, res, next) {
     try {
@@ -20,7 +20,7 @@ export async function getSpellsController(req, res) {
             return res.status(400).json({ message: 'Valid accountId is required' });
         }
 
-        const spells = await getSpellsByAccount(accountId);
+        const spells = await getSpellsByAccountService(accountId);
         return res.json(spells);
 
     } catch (err) {
@@ -31,7 +31,7 @@ export async function getSpellsController(req, res) {
     }
 }
 
-export async function getSpellById(req, res) {
+export async function getSpellByIdController(req, res) {
     try {
         const spell = await getSpellByIdService(req.params.id);
 
@@ -49,5 +49,17 @@ export async function getSpellById(req, res) {
         return res
             .status(err?.status || 500)
             .json({ message: err?.message || 'Failed to fetch spell' });
+    }
+}
+
+export async function deleteSpellController(req, res) {
+    try {
+        await deleteSpellService(req.params.id);
+        return res.json({ message: 'Spell deleted' });
+    } catch (err) {
+        console.log(err.message)
+        return res
+            .status(err?.status || 500)
+            .json({ message: 'Failed to delete spell' });
     }
 }
