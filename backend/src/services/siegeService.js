@@ -70,3 +70,18 @@ export async function startSiegeUpgradeService(siegeId, upgradeTimeSec, upgradeC
 
     return await startUpgrade(siege, upgradeTimeSec, upgradeCost);
 }
+
+export async function finishSiegeUpgradeService(siegeId) {
+    const siege = await Siege.findById(siegeId);
+    if (!siege) {
+        throw { status: 404, message: 'Siege not found' };
+    }
+
+    if (!canFinishUpgrade(siege)) {
+        throw { status: 400, message: 'No active upgrade or upgrade not finished yet' };
+    }
+
+    const updatedSiege = finishUpgrade(siege);
+    await updatedSiege.save();
+    return updatedSiege;
+}
