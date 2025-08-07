@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Spell from '../models/Spell.js';
 import { startUpgrade } from '../utils/upgradeUtils.js';
-import { createSpellService, getSpellsByAccountService, deleteSpellService } from '../services/spellService.js';
+import { createSpellService, getSpellsByAccountService, deleteSpellService, getSpellUpgradeStatus } from '../services/spellService.js';
 
 export async function createSpellController(req, res, next) {
     try {
@@ -97,5 +97,22 @@ export async function finishSpellUpgradeController(req, res, next) {
         }
         console.log(e.message);
         return res.status(500).json({ error: 'Internal server error.'})
+    }
+}
+
+export async function getSpellUpgradeStatus(req, res) {
+    try {
+        const { id } = req.params;
+        const spell = await Spell.findById(id);
+        
+        if (!spell) {
+            return res.status(404).json({ error: 'Siege not found' });
+        }
+        
+        const status = getSpellUpgradeStatus(spell);
+        res.json(status);
+    } catch (err) {
+        console.log(err.message)
+        return res.status(500).json({ message: 'Failed to get upgrade status' });
     }
 }

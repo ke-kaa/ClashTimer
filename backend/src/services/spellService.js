@@ -4,6 +4,7 @@ import { normalizeKey } from '../utils/convertUtils.js'
 import Account from '../models/Account.js';
 import { itemsByTownHall } from '../utils/itemsByTownHall.js';
 import { startUpgrade, finishUpgrade, canFinishUpgrade } from '../utils/upgradeUtils.js';
+import { computeUpgradeStatus } from '../utils/computeUpgradeStatusUtils.js';
 
 export async function createSpellService({ accountId, name, spellName, currentLevel }) {
     if (!isId(accountId)) throw { status: 400, message: 'Invalid accountId' };
@@ -118,4 +119,8 @@ export async function finishSpellUpgradeService(spellId) {
     const updatedspell = finishUpgrade(spell);
     await updatedspell.save();
     return updatedspell;
+}
+
+export function getSpellUpgradeStatus(spell) {
+    return computeUpgradeStatus(spell);
 }
