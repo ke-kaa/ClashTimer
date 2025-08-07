@@ -3,6 +3,7 @@ import { isId } from '../utils/validationUtils.js';
 import { normalizeKey } from '../utils/convertUtils.js'
 import Account from '../models/Account.js';
 import { itemsByTownHall } from '../utils/itemsByTownHall.js';
+import { startPetUpgrade } from '../controllers/petController.js';
 
 export async function createSpellService({ accountId, name, spellName, currentLevel }) {
     if (!isId(accountId)) throw { status: 400, message: 'Invalid accountId' };
@@ -95,4 +96,11 @@ export async function deleteSpellService(id) {
     }
 
     return spell; 
+}
+
+export async function startSpellUpgradeService(spellId, upgradeTimeSec, upgradeCost) {
+    const spell = await Spell.findById(spellId);
+    if (!spell) throw new Error('Spell not found');
+
+    return await startPetUpgrade(spell, upgradeTimeSec, upgradeCost);
 }

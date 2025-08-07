@@ -63,3 +63,21 @@ export async function deleteSpellController(req, res) {
             .json({ message: 'Failed to delete spell' });
     }
 }
+
+export async function startSpellUpgradeController(req, res) {
+    try {
+        const { spellId, upgradeTimeSec, upgradeCost = 0 } = req.body;
+
+        if (!spellId){
+            return res.json(400).json({ error: "spellId required"});
+        }
+        if (upgradeTimeSec == null || isNaN(upgradeTimeSec) || upgradeTimeSec < 0) {
+            return res.status(400).json({ error: 'upgradeTimeSec must be >= 0' });
+        }
+
+        const result = await startSpellUpgradeService(spellId, upgradeTimeSec, upgradeCost);
+        return res.json(result)
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to start upgrade', error: err?.message });
+    }
+}
