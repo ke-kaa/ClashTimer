@@ -66,3 +66,7 @@ export async function createSpellService({ accountId, name, spellName, currentLe
 
     return spell;
 }
+
+export async function getSpellsByAccount({ accountId }) {
+    return await Spell.find({ accoun: accountId }).sort({ createdAt: -1 });
+}
