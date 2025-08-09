@@ -1,13 +1,3 @@
-import Account from '../models/Account.js';
-import Building from '../models/Building.js';
-import Hero from '../models/Hero.js';
-import Pet from '../models/Pet.js';
-import Siege from '../models/Siege.js';
-import Spell from '../models/Spell.js';
-import Troop from '../models/Troop.js';
-import Research from '../models/Research.js';
-import Upgrade from '../models/Upgrade.js';
-import { itemsByTownHall } from '../utils/itemsByTownHall.js';
 import { getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
 
 export async function getAccounts(req, res) {
