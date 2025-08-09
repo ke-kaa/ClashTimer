@@ -87,12 +87,12 @@ export async function startSpellUpgradeController(req, res) {
 export async function finishSpellUpgradeController(req, res, next) {
     try {
         const { spellId } = req.body;
-        if (!spellId) return res.status(400).json({ error: 'siegeId required' });
+        if (!spellId) return res.status(400).json({ error: 'spellId required' });
 
-        const spell = await finishSpellUpgradeService(siegeId);
-        res.json({ siege, finished: true });
+        const spell = await finishSpellUpgradeService(spellId);
+        res.json({ spell, finished: true });
     } catch (e) {
-        if (e.message = "Siege not found"){
+        if (e.message = "spell not found"){
             return res.status(404).json({ error: e.message });
         }
         console.log(e.message);
@@ -106,7 +106,7 @@ export async function getSpellUpgradeStatus(req, res) {
         const spell = await Spell.findById(id);
         
         if (!spell) {
-            return res.status(404).json({ error: 'Siege not found' });
+            return res.status(404).json({ error: 'spell not found' });
         }
         
         const status = getSpellUpgradeStatus(spell);
