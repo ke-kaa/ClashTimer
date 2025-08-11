@@ -1,6 +1,6 @@
 import Siege from '../models/Siege.js';
 import Account from '../models/Account.js';
-import { unlockSiegeService, getSiegeUpgradeStatus, startSiegeUpgradeService, finishSiegeUpgradeService } from '../services/siegeService.js';
+import { unlockSiegeService, startSiegeUpgradeService, finishSiegeUpgradeService, getSiegeUpgradeStatusService } from '../services/siegeService.js';
 
 
 export async function getSiegesByAccountId(req, res) {
@@ -73,7 +73,7 @@ export async function getSiegeUpgradeStatus(req, res, next) {
             return res.status(404).json({ error: 'Siege not found' });
         }
 
-        const status = getSiegeUpgradeStatus(siege);
+        const status = getSiegeUpgradeStatusService(siege);
         res.json(status);
     } catch (err) {
         console.log(e.message);

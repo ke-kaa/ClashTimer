@@ -1,5 +1,5 @@
-import Troop from "../models/Troop";
-import { createTroopService, getTroopByAccountService, getTroopByIdService, deleteTroopService, startTroopUpgradeService, finishTroopUpgradeService, getTroopUpgradeStatus  } from "../services/troopService";
+import Troop from "../models/Troop.js";
+import { createTroopService, getTroopsByAccountService, getTroopByIdService, deleteTroopService, startTroopUpgradeService, finishTroopUpgradeService, getTroopUpgradeStatusService  } from "../services/troopService.js";
 
 export async function createTroopController(req, res, next) {
     try {
@@ -18,7 +18,7 @@ export async function getTroopsByAccountIdController(req, res) {
             return res.status(400).json({ message: 'Valid accountId is required' });
         }
 
-        const troops = await getTroopByAccountService(accountId);
+        const troops = await getTroopsByAccountService(accountId);
         return res.json(troops);
 
     } catch (err) {
@@ -107,7 +107,7 @@ export async function getTroopUpgradeStatus(req, res) {
             return res.status(404).json({ error: 'Siege not found' });
         }
         
-        const status = getTroopUpgradeStatus(troop);
+        const status = getTroopUpgradeStatusService(troop);
         res.json(status);
     } catch (err) {
         console.log(err.message)

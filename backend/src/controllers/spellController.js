@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Spell from '../models/Spell.js';
 import { startUpgrade } from '../utils/upgradeUtils.js';
-import { createSpellService, getSpellsByAccountService, deleteSpellService, getSpellUpgradeStatus } from '../services/spellService.js';
+import { createSpellService, getSpellsByAccountService, deleteSpellService, getSpellUpgradeStatusService } from '../services/spellService.js';
 
 export async function createSpellController(req, res, next) {
     try {
@@ -109,7 +109,7 @@ export async function getSpellUpgradeStatus(req, res) {
             return res.status(404).json({ error: 'spell not found' });
         }
         
-        const status = getSpellUpgradeStatus(spell);
+        const status = getSpellUpgradeStatusService(spell);
         res.json(status);
     } catch (err) {
         console.log(err.message)
