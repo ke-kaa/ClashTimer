@@ -4,7 +4,7 @@ const HeroSchema = new Schema({
     name: { type: String, required: true },
     heroType: { 
         type: String, 
-        enum: ['Barbarian King', 'Archer Queen', 'Grand Warden', 'Royal Champion'],
+        enum: ['Dark Elixir', 'Elixir'],
         required: true 
     },
     currentLevel: { 
@@ -28,7 +28,7 @@ const HeroSchema = new Schema({
     upgradeEndTime: { type: Date },
     upgradeCost: { type: Number, default: 0 },
     upgradeTime: { type: Number, default: 0 }, // in seconds
-    abilityLevel: { type: Number, default: 0 }, // for hero abilities
+    // equipments: [{ type: Schema.Types.ObjectId, ref: 'HeroEquipment' }],
     account: { type: Schema.Types.ObjectId, ref: 'Account', required: true },
 }, { timestamps: true });
 

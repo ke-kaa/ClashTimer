@@ -28,7 +28,6 @@ const SiegeSchema = new Schema({
     upgradeEndTime: { type: Date },
     upgradeCost: { type: Number, default: 0 },
     upgradeTime: { type: Number, default: 0 }, // in seconds
-    housingSpace: { type: Number, default: 1 }, // space taken in siege workshop
     account: { type: Schema.Types.ObjectId, ref: 'Account', required: true },
 }, { timestamps: true });
 

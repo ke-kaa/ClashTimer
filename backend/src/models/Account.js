@@ -9,7 +9,7 @@ const AccountSchema = new Schema({
         validate: {
             validator: function(v) {
                 // Player tag should start with # and be 8-9 characters total
-                return !v || /^#[A-Z0-9]{7,8}$/.test(v);
+                return !v || /^#[A-Z0-9]{9,10}$/.test(v);
             },
             message: 'Player tag must start with # and be 7-8 characters after the # (e.g., #ABC1234)'
         }
