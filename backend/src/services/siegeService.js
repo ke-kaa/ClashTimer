@@ -1,5 +1,5 @@
-import { Account } from '../models/Account.js';
-import { Siege } from '../models/Siege.js';
+import Account  from '../models/Account.js';
+import  Siege  from '../models/Siege.js';
 import { computeUpgradeStatus } from '../utils/computeUpgradeStatusUtils.js';
 import { startUpgrade } from '../utils/upgradeUtils.js';
 import { canFinishUpgrade, finishUpgrade } from '../utils/upgradeUtils.js';
@@ -60,7 +60,7 @@ export async function unlockSiegeService({ accountId, input }) {
     return siege;
 }
 
-export function getSiegeUpgradeStatus(siege) {
+export function getSiegeUpgradeStatusService(siege) {
     return computeUpgradeStatus(siege);
 }
 

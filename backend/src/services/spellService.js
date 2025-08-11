@@ -121,6 +121,6 @@ export async function finishSpellUpgradeService(spellId) {
     return updatedspell;
 }
 
-export function getSpellUpgradeStatus(spell) {
+export function getSpellUpgradeStatusService(spell) {
     return computeUpgradeStatus(spell);
 }

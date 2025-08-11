@@ -121,6 +121,6 @@ export async function finishTroopUpgradeService(troopId) {
     return updatedtroop;
 }
 
-export function getTroopUpgradeStatus(troop) {
+export function getTroopUpgradeStatusService(troop) {
     return computeUpgradeStatus(troop);
 }

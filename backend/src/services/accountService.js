@@ -1,11 +1,11 @@
-import Account from "../../models/Account";
-import { itemsByTownHall, maxTownHallLevel } from "../../utils/itemsByTownHall";  
-import Building from "../../models/Building";
-import Hero from "../../models/Hero";
-import Pet from "../../models/Pet";
-import Siege from "../../models/Siege";
-import Spell from "../../models/Spell";
-import Troop from "../../models/Troop";
+import Account from "../models/Account.js";
+import { itemsByTownHall, maxTownHallLevel } from "../utils/itemsByTownHall.js";  
+import Building from "../models/Building.js";
+import Hero from "../models/Hero.js";
+import Pet from "../models/Pet.js";
+import Siege from "../models/Siege.js";
+import Spell from "../models/Spell.js";
+import Troop from "../models/Troop.js";
 
 
 export async function getAccountsService({ clanTag, townHallLevel, playerTag, sortBy }) {
@@ -56,8 +56,6 @@ export async function getAccountDetailService(accountId){
         .populate('siege')
         .populate('spells')
         .populate('troops')
-        .populate('research')
-        .populate('upgrades');
     
     if (!account) throw { status: 404, message: 'Account not found' };
 
@@ -94,7 +92,7 @@ export async function createAccountService({ username, playerTag, townHallLevel,
 
     let buildingIds = [], heroIds = [], troopIds = [], petIds = [], siegeIds = [], spellIds = [];
 
-    for (const b of thData.buildingIds) {
+    for (const b of thData.buildings) {
         for (let i = 0; i < b.count; i++){
             const building = new Building({
             name: b.itemName,
