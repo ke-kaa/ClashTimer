@@ -37,4 +37,35 @@ export async function regsitrationService({ username, email, password }) {
             refreshToken,
         },
     };
+};
+
+export async function loginService({ email, username, password }) {
+    const id = (email || username || '').trim();
+    if (!id || !password) throw { status: 400, message: 'identifier/email/username and password are required' };
+
+    const isEmail = id.includes('@');
+    const query = isEmail ? { email: id.toLowerCase() } : { username: id };
+    const user = await User.findOne(query);
+    if (!user) throw { status: 401, message: 'Invalid credentials' };
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) throw { status: 401, message: 'Invalid credentials' };
+
+    const payload = { sub: user._id.toString(), role: user.role };
+    const accessToken = jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+    const refreshToken = jwt.sign(
+        { sub: payload.sub, type: 'refresh' },
+        config.jwt.refreshSecret,
+        { expiresIn: config.jwt.refreshExpiresIn }
+    );
+
+    return {
+        user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        role: user.role
+        },
+        tokens: { accessToken, refreshToken }
+    };
 }
