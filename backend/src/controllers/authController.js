@@ -63,3 +63,21 @@ export async function loginController(req, res) {
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export async function refreshTokenController(req, res) {
+    const refreshTokenPlain = req.cookies?.refreshToken || req.get('x-refresh-token') || req.body?.refreshToken;
+
+    try {
+        const result = await refreshTokenService({ refreshTokenPlain });
+
+        res.cookie('refreshToken', result.tokens.refreshToken, {
+            ...COOKIE_OPTIONS,
+            expires: result.tokens.refreshTokenExpiresAt,
+        });
+
+        return res.json({ tokens: { accessToken: result.tokens.accessToken } });
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ error: error.message || 'Internal server error' });
+    }
+};
