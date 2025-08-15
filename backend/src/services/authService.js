@@ -1,11 +1,10 @@
-import User from '../models/User';
-import { hash, compare } from 'bcrypt';
-import { sign } from 'crypto';
-import jwt from 'jsonwebtoken';
-import { config } from '../config/config.js';
+import User from '../models/User.js';
+import * as tokenUtil from '../utils/tokenUtil.js';
+import bcrypt from 'bcryptjs';
 
-export async function regsitrationService({ username, email, password }) {
+export async function regitrationService({ username, email, password }) {
     const emailNorm = email.trim().toLowerCase();
+    const usernameNorm = username.trim();
 
     const existingUser = await User.findOne({ $or: [{ email: emailNorm }, { username }] });
     if (existingUser) {
@@ -14,16 +13,21 @@ export async function regsitrationService({ username, email, password }) {
         throw err
     };
 
-    const hashedPassword = await hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
     const newUser = new User.create({
-        username, 
+        username: usernameNorm, 
         email: emailNorm,
         password: hashedPassword,
     });
 
-    const payload = { sub: newUser._id.toString(), role: newUser.role }; 
-    const accessToken = sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn} );
-    const refreshToken = sign({ sub: payload.sub, type: 'refresh' }, config.jwt.refreshSecret, { expiresIn: config.jwt.refreshExpiresIn} );
+    const accessToken = tokenUtil.signAccessToken(newUser);
+    const refreshTokenPlain = tokenUtil.generateRefreshTokenOpaque();
+    const refreshTokenHashed = tokenUtil.hashToken(refreshTokenPlain);
+    const refreshExpiresAt = tokenUtil.refreshTokenExpiryDate();
+
+    newUser.refershTokens = Array.isArray(newUser.refershTokens) ? newUser.refreshTokens : [];
+    newUser.refershTokens.push({ token: refreshTokenHashed, expiresAt: refreshExpiresAt });
+    await newUser.save();
 
     return {
         user: {
@@ -34,30 +38,50 @@ export async function regsitrationService({ username, email, password }) {
         },
         tokens: {
             accessToken,
-            refreshToken,
+            refreshToken: refreshTokenPlain,
+            refreshTokenExpiresAt: refreshExpiresAt, 
         },
     };
 };
 
 export async function loginService({ email, username, password }) {
     const id = (email || username || '').trim();
-    if (!id || !password) throw { status: 400, message: 'identifier/email/username and password are required' };
+    if (!id || !password) throw { status: 400, message: 'email/username and password are required' };
 
     const isEmail = id.includes('@');
     const query = isEmail ? { email: id.toLowerCase() } : { username: id };
-    const user = await User.findOne(query);
+    const user = await User.findOne(query).select('+password');
     if (!user) throw { status: 401, message: 'Invalid credentials' };
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) throw { status: 401, message: 'Invalid credentials' };
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+        return res.status(403).json({ message: 'Account locked due to failed login attempts. Try later.' });
+    }
 
-    const payload = { sub: user._id.toString(), role: user.role };
-    const accessToken = jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-    const refreshToken = jwt.sign(
-        { sub: payload.sub, type: 'refresh' },
-        config.jwt.refreshSecret,
-        { expiresIn: config.jwt.refreshExpiresIn }
-    );
+    const ok = await user.comparePassword(password);
+    if (!ok) {
+        user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+
+        const allowedLoginAttempts = 5;
+        const lockTime = 360000 // milliseconds -> 1 hr
+        if (user.failedLoginAttempts >= allowedLoginAttempts) {
+            user.lockUntil = Date.now() + lockTime; 
+        }
+
+        await user.save();
+        throw { status: 401, message: 'Invalid credentials' };
+    }
+
+    user.failedLoginAttempts = 0;
+    user.lockUntil = undefined;
+
+    const accessToken = tokenUtil.signAccessToken(user);
+    const refreshTokenPlain = tokenUtil.generateRefreshTokenOpaque();
+    const refreshTokenHashed = tokenUtil.hashToken(refreshTokenPlain);
+    const refreshExpiresAt = tokenUtil.refreshTokenExpiryDate();
+
+    user.refreshTokens = Array.isArray(user.refreshTokens) ? user.refreshTokens : [];
+    user.refreshTokens.push({ token: refreshTokenHashed, expiresAt: refreshExpiresAt });
+    await user.save();
 
     return {
         user: {
@@ -66,6 +90,10 @@ export async function loginService({ email, username, password }) {
         email: user.email,
         role: user.role
         },
-        tokens: { accessToken, refreshToken }
+        tokens: {
+            accessToken,
+            refreshToken: refreshTokenPlain,
+            refreshTokenExpiresAt: refreshExpiresAt,
+        },
     };
-}
+};
