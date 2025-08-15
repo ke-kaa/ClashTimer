@@ -1,4 +1,13 @@
-import { regsitrationService, loginService } from "../services/authService.js";
+import { regitrationService, loginService, refreshTokenService } from "../services/authService.js";
+import { config } from "../config/config.js";
+
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+};
+
 
 export async function registerUserController(req, res) {
     const { username, email, password } = req.body || {};
@@ -8,10 +17,17 @@ export async function registerUserController(req, res) {
     }
 
     try {
+        const result = await regitrationService({username, email, password});
 
-        const result = await regsitrationService({username, email, password});
-        return res.status(201).json(result);
+        res.cookie('refreshToken', result.tokens.refreshToken, {
+            ...COOKIE_OPTIONS,
+            expires: result.tokens.refreshTokenExpiresAt,
+        });
 
+        return res.status(201).json({
+            user: result.user,
+            tokens: { accessToken: result.tokens.accessToken },
+        });
     }
     catch (error) {
         if (error.status === 400 || error.status === 409 || error.message === 'User already exists'){
@@ -27,10 +43,18 @@ export async function loginController(req, res) {
     if (!(email || username) || !password) {
         return res.status(400).json({ error: 'identifier/email/username and password are required' });
     }
-
     try {
         const result = await loginService({ email, username, password });
-        return res.json(result);
+
+        res.cookie('refreshToken', result.tokens.refreshToken, {
+            ...COOKIE_OPTIONS,
+            expires: result.tokens.refreshTokenExpiresAt,
+        });
+
+        return res.json({
+            user: result.user,
+            tokens: { accessToken: result.tokens.accessToken },
+        });
     } catch (error) {
         if (error.status === 400 || error.status === 401) {
         return res.status(error.status).json({ error: error.message });
