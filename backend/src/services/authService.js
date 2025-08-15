@@ -97,3 +97,53 @@ export async function loginService({ email, username, password }) {
         },
     };
 };
+
+export async function refreshTokenService({ refreshTokenPlain }) {
+    if (!refreshTokenPlain) {
+        const err = new Error('No refresh token');
+        err.status = 401;
+        throw err;
+    };
+
+    const hashed = tokenUtil.hashToken(refreshTokenPlain);
+
+    const user = await User.findOne({ 'refreshTokens.token': hashed });
+    if (!user) {
+        const err = new Error('Invalid refresh token');
+        err.status = 403;
+        throw err;
+    };
+    
+
+    const tokenEntry = user.refreshTokens.find(r => r.token === hashed);
+    if (!tokenEntry || tokenEntry.expiresAt.getTime() < Date.now()) {
+        user.refreshTokens = user.refreshTokens.filter((r) => r.token !== hashed);
+        await user.save();
+        const err = new Error('Refresh token expired');
+        err.status = 403;
+        throw err;
+    }
+
+    user.refreshTokens = user.refreshTokens.filter((r) => r.token !== hashed);
+    const newRefreshPlain = tokenUtil.generateRefreshTokenOpaque();
+    const newHashed = tokenUtil.hashToken(newRefreshPlain);
+    const newExpiresAt = tokenUtil.refreshTokenExpiryDate();
+    user.refreshTokens.push({ token: newHashed, expiresAt: newExpiresAt });
+    await user.save();
+
+    const accessToken = tokenUtil.signAccessToken(user);
+
+    return {
+        user: {
+            id: user._id.toString(),
+            username: user.username,
+            email: user.email,
+            role: user.role,
+        },
+        tokens: {
+            accessToken,
+            refreshToken: newRefreshPlain,
+            refreshTokenExpiresAt: newExpiresAt,
+        },
+    };
+};
