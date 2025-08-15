@@ -147,3 +147,18 @@ export async function refreshTokenService({ refreshTokenPlain }) {
         },
     };
 };
+
+export async function logoutService({ refreshTokenPlain }) {
+    if (!refreshTokenPlain) {
+        return { revoked: false };
+    }
+
+    const hashed = tokenUtil.hashToken(refreshTokenPlain);
+
+    const result = await User.updateOne(
+        { 'refreshTokens.token': hashed },
+        { $pull: { refreshTokens: { token: hashed } } }
+    );
+
+    return { revoked: (result.modifiedCount || result.nModified || 0) > 0 };
+}

@@ -1,4 +1,4 @@
-import { regitrationService, loginService, refreshTokenService } from "../services/authService.js";
+import { regitrationService, loginService, refreshTokenService ,logoutService } from "../services/authService.js";
 import { config } from "../config/config.js";
 
 const COOKIE_OPTIONS = {
@@ -81,3 +81,21 @@ export async function refreshTokenController(req, res) {
         return res.status(status).json({ error: error.message || 'Internal server error' });
     }
 };
+
+export async function logoutController(req, res) {
+    try {
+        const refreshTokenPlain =
+            req.cookies?.refreshToken ||
+            req.get('x-refresh-token') ||
+            req.body?.refreshToken;
+
+        await logoutService({ refreshTokenPlain });
+
+        res.clearCookie('refreshToken', COOKIE_OPTIONS);
+        return res.status(204).end();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
