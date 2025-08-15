@@ -1,4 +1,4 @@
-import { regitrationService, loginService, refreshTokenService ,logoutService } from "../services/authService.js";
+import { regitrationService, loginService, refreshTokenService ,logoutService, forgotPasswordService } from "../services/authService.js";
 import { config } from "../config/config.js";
 
 const COOKIE_OPTIONS = {
@@ -99,3 +99,17 @@ export async function logoutController(req, res) {
     }
 };
 
+export async function forgotPasswordController(req, res) {
+    const { email } = req.body || {};
+    try {
+        await forgotPasswordService({ email });
+        // Uniform response to avoid user enumeration
+        return res.status(200).json({ message: 'If the email exists, a reset link has been sent' });
+    } catch (error) {
+        if (error.status === 400) {
+        return res.status(400).json({ error: error.message });
+        }
+        console.error(error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}

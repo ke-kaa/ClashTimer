@@ -1,6 +1,8 @@
 import User from '../models/User.js';
 import * as tokenUtil from '../utils/tokenUtil.js';
 import bcrypt from 'bcryptjs';
+import { sendmail } from '../utils/emailUtil.js';
+import { config } from '../config/config.js';
 
 export async function regitrationService({ username, email, password }) {
     const emailNorm = email.trim().toLowerCase();
@@ -161,4 +163,44 @@ export async function logoutService({ refreshTokenPlain }) {
     );
 
     return { revoked: (result.modifiedCount || result.nModified || 0) > 0 };
+}
+
+export async function forgotPasswordService({ email }) {
+    const emailNorm = (email || '').trim().toLowerCase();
+    if (!emailNorm) {
+        const err = new Error('Email is required');
+        err.status = 400;
+        throw err;
+    }
+
+    const user = await User.findOne({ email: emailNorm });
+    if (!user) {
+        return { ok: true };
+    }
+
+    // Create reset token (store hashed, send plaintext)
+    const resetPlain = crypto.randomBytes(32).toString('hex');
+    const resetHashed = crypto.createHash('sha256').update(resetPlain).digest('hex');
+
+    user.passwordResetToken = resetHashed;
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    const base = (config?.clientUrl);
+    const clientBase = String(base).replace(/\/$/, '');
+    const resetUrl = `${clientBase}/reset-password?token=${resetPlain}&email=${encodeURIComponent(emailNorm)}`;
+
+    // Send email (do not throw if mail fails to avoid info leak)
+    try {
+        await sendmail({
+        to: emailNorm,
+        subject: 'Password reset',
+        text: `Reset here: ${resetUrl}`,
+        html: `<p>Reset your password <a href="${resetUrl}">here</a></p>`
+        });
+    } catch (e) {
+        console.error('Failed to send password reset email:', e);
+    }
+
+    return { ok: true };
 }
