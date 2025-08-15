@@ -3,6 +3,7 @@ import * as tokenUtil from '../utils/tokenUtil.js';
 import bcrypt from 'bcryptjs';
 import { sendmail } from '../utils/emailUtil.js';
 import { config } from '../config/config.js';
+import crypto from 'crypto';
 
 export async function regitrationService({ username, email, password }) {
     const emailNorm = email.trim().toLowerCase();
@@ -201,6 +202,43 @@ export async function forgotPasswordService({ email }) {
     } catch (e) {
         console.error('Failed to send password reset email:', e);
     }
+
+    return { ok: true };
+}
+
+export async function resetPasswordService({ token, email, newPassword }) {
+    const emailNorm = (email || '').trim().toLowerCase();
+    const tokenPlain = (token || '').trim();
+    const pwd = (newPassword || '').trim();
+
+    if (!emailNorm || !tokenPlain || !pwd) {
+        const err = new Error('email, token and newPassword are required');
+        err.status = 400;
+        throw err;
+    }
+
+    const hashed = crypto.createHash('sha256').update(tokenPlain).digest('hex');
+
+    const user = await User.findOne({
+        email: emailNorm,
+        passwordResetToken: hashed,
+        passwordResetExpires: { $gt: new Date() }
+    });
+    if (!user) {
+        const err = new Error('Invalid or expired token');
+        err.status = 400;
+        throw err;
+    }
+
+    // Update password (pre-save hook hashes it)
+    user.password = pwd;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    // Force logout everywhere
+    user.refreshTokens = [];
+
+    await user.save();
 
     return { ok: true };
 }

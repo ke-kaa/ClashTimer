@@ -1,4 +1,4 @@
-import { regitrationService, loginService, refreshTokenService ,logoutService, forgotPasswordService } from "../services/authService.js";
+import { regitrationService, loginService, refreshTokenService ,logoutService, forgotPasswordService, resetPasswordService } from "../services/authService.js";
 import { config } from "../config/config.js";
 
 const COOKIE_OPTIONS = {
@@ -7,7 +7,6 @@ const COOKIE_OPTIONS = {
     sameSite: 'strict',
     path: '/',
 };
-
 
 export async function registerUserController(req, res) {
     const { username, email, password } = req.body || {};
@@ -112,4 +111,22 @@ export async function forgotPasswordController(req, res) {
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-}
+};
+
+export async function resetPasswordController(req, res) {
+    const { token, email, newPassword } = req.body || {};
+    if (!token || !email || !newPassword) {
+        return res.status(400).json({ error: 'email, token and newPassword are required' });
+    }
+
+    try {
+        await resetPasswordService({ token, email, newPassword });
+
+        // Clear refresh token cookie so client must re-authenticate
+        res.clearCookie('refreshToken', COOKIE_OPTIONS);
+        return res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ error: error.message || 'Internal server error' });
+    }
+};
