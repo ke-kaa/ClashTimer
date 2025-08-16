@@ -40,7 +40,7 @@ export async function registerUserController(req, res) {
 export async function loginController(req, res) {
     const { email, username, password } = req.body || {};
     if (!(email || username) || !password) {
-        return res.status(400).json({ error: 'identifier/email/username and password are required' });
+        return res.status(400).json({ error: 'email/username and password are required' });
     }
     try {
         const result = await loginService({ email, username, password });
@@ -56,7 +56,8 @@ export async function loginController(req, res) {
         });
     } catch (error) {
         if (error.status === 400 || error.status === 401) {
-        return res.status(error.status).json({ error: error.message });
+            console.error(error)
+            return res.status(error.status).json({ error: error.message });
         }
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
