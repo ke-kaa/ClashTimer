@@ -1,50 +1,37 @@
-import Building from '../models/Building.js';
-import Account from '../models/Account.js';
-import mongoose from 'mongoose';
+import {
+    getBuildingByIdService,
+    getBuildingsByAccountService,
+    updateBuildingLevelService,
+    startBuildingUpgradeService,
+    completeBuildingUpgradeService,
+    cancelBuildingUpgradeService,
+    getBuildingsByStatusService,
+    getBuildingsByTypeService,
+    getUpgradeableBuildingsService,
+    getMaxedBuildingsService,
+    validateBuildingUpgradeService,
+    getBuildingsByBuildingTypeService,
+    getUpgradingBuildingsService,
+    getReadyBuildingsService,
+    getBuildingUpgradeProgressService,
+    getBuildingStatsService,
+} from '../services/buildingService.js';
 
-export async function getAllBuildings(req, res) {
-    try {
-        const { accountId, status, buildingType } = req.query;
-        let query = {};
-
-        // Filter by account if provided
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        // Filter by status if provided
-        if (status && ['Idle', 'Upgrading'].includes(status)) {
-            query.status = status;
-        }
-
-        // Filter by building type/name if provided
-        if (buildingType) {
-            query.name = { $regex: buildingType, $options: 'i' };
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
-        return res.json(buildings);
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
-}
+// getAllBuildings removed: use account-scoped endpoints
 
 export async function getBuildingById(req, res) {
     try {
-        const building = await Building.findById(req.params.id).populate('account', 'username townHallLevel');
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
+        const building = await getBuildingByIdService(req.params.id, req.user?.id);
         return res.json(building);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
 export async function getBuildingsByAccount(req, res) {
     try {
         const { accountId } = req.params;
-        const buildings = await Building.find({ account: accountId }).populate('account', 'username townHallLevel');
+        const buildings = await getBuildingsByAccountService(req.user?.id, accountId);
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -55,26 +42,10 @@ export async function updateBuildingLevel(req, res) {
     try {
         const { id } = req.params;
         const { currentLevel } = req.body;
-
-        if (currentLevel === undefined || !Number.isInteger(currentLevel) || currentLevel < 0) {
-            return res.status(400).json({ error: 'Invalid current level. Must be a non-negative integer.' });
-        }
-
-        const building = await Building.findById(id);
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        if (currentLevel > building.maxLevel) {
-            return res.status(400).json({ error: 'Current level cannot exceed maximum level' });
-        }
-
-        building.currentLevel = currentLevel;
-        await building.save();
-
+        const building = await updateBuildingLevelService(id, currentLevel);
         return res.json(building);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
@@ -82,91 +53,30 @@ export async function startBuildingUpgrade(req, res) {
     try {
         const { id } = req.params;
         const { upgradeCost, upgradeTime } = req.body;
-        const building = await Building.findById(id);
-        
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        if (building.status === 'Upgrading') {
-            return res.status(400).json({ error: 'Building is already upgrading' });
-        }
-
-        if (building.currentLevel >= building.maxLevel) {
-            return res.status(400).json({ error: 'Building is already at maximum level' });
-        }
-
-        const now = new Date();
-        const upgradeEndTime = new Date(now.getTime() + (upgradeTime || 0) * 1000);
-
-        building.status = 'Upgrading';
-        building.upgradeStartTime = now;
-        building.upgradeEndTime = upgradeEndTime;
-        building.upgradeCost = upgradeCost || 0;
-        building.upgradeTime = upgradeTime || 0;
-        await building.save();
-
+        const building = await startBuildingUpgradeService(id, { upgradeCost, upgradeTime });
         return res.json(building);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
 export async function completeBuildingUpgrade(req, res) {
     try {
         const { id } = req.params;
-        const building = await Building.findById(id);
-        
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        if (building.status !== 'Upgrading') {
-            return res.status(400).json({ error: 'Building is not currently upgrading' });
-        }
-
-        if (building.currentLevel >= building.maxLevel) {
-            return res.status(400).json({ error: 'Building is already at maximum level' });
-        }
-
-        building.currentLevel += 1;
-        building.status = 'Idle';
-        building.upgradeStartTime = null;
-        building.upgradeEndTime = null;
-        building.upgradeCost = 0;
-        building.upgradeTime = 0;
-        await building.save();
-
-        // Update account's total upgrades counter
-        await Account.findByIdAndUpdate(building.account, { $inc: { totalUpgrades: 1 } });
-
+        const building = await completeBuildingUpgradeService(id);
         return res.json(building);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
 export async function cancelBuildingUpgrade(req, res) {
     try {
         const { id } = req.params;
-        const building = await Building.findById(id);
-        
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        if (building.status !== 'Upgrading') {
-            return res.status(400).json({ error: 'Building is not currently upgrading' });
-        }
-
-        building.status = 'Idle';
-        building.upgradeStartTime = null;
-        building.upgradeEndTime = null;
-        await building.save();
-
+        const building = await cancelBuildingUpgradeService(id);
         return res.json(building);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
@@ -174,20 +84,10 @@ export async function getBuildingsByStatus(req, res) {
     try {
         const { status } = req.params;
         const { accountId } = req.query;
-
-        if (!['Idle', 'Upgrading'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid status. Must be "Idle" or "Upgrading"' });
-        }
-
-        let query = { status };
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        const buildings = await getBuildingsByStatusService(req.user?.id, accountId, status);
         return res.json(buildings);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
@@ -195,13 +95,7 @@ export async function getBuildingsByType(req, res) {
     try {
         const { buildingType } = req.params;
         const { accountId } = req.query;
-
-        let query = { name: { $regex: buildingType, $options: 'i' } };
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        const buildings = await getBuildingsByTypeService(req.user?.id, accountId, buildingType);
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -211,16 +105,7 @@ export async function getBuildingsByType(req, res) {
 export async function getUpgradeableBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        let query = { 
-            currentLevel: { $lt: { $expr: '$maxLevel' } },
-            status: 'Idle'
-        };
-        
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        const buildings = await getUpgradeableBuildingsService(req.user?.id, accountId);
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -230,15 +115,7 @@ export async function getUpgradeableBuildings(req, res) {
 export async function getMaxedBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        let query = { 
-            currentLevel: { $eq: { $expr: '$maxLevel' } }
-        };
-        
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        const buildings = await getMaxedBuildingsService(req.user?.id, accountId);
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -248,25 +125,10 @@ export async function getMaxedBuildings(req, res) {
 export async function validateBuildingUpgrade(req, res) {
     try {
         const { id } = req.params;
-        const building = await Building.findById(id);
-        
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        const canUpgrade = building.status === 'Idle' && building.currentLevel < building.maxLevel;
-        
-        return res.json({
-            canUpgrade,
-            currentLevel: building.currentLevel,
-            maxLevel: building.maxLevel,
-            status: building.status,
-            reason: canUpgrade ? 'Building can be upgraded' : 
-                building.status === 'Upgrading' ? 'Building is currently upgrading' :
-                building.currentLevel >= building.maxLevel ? 'Building is at maximum level' : 'Unknown reason'
-        });
+        const result = await validateBuildingUpgradeService(id);
+        return res.json(result);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
@@ -274,35 +136,17 @@ export async function getBuildingsByBuildingType(req, res) {
     try {
         const { buildingType } = req.params;
         const { accountId } = req.query;
-
-        if (!['Resource', 'Defense', 'Army', 'Storage', 'Wall', 'Trap', 'Special'].includes(buildingType)) {
-            return res.status(400).json({ error: 'Invalid building type' });
-        }
-
-        let query = { buildingType };
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query).populate('account', 'username townHallLevel');
+        const buildings = await getBuildingsByBuildingTypeService(req.user?.id, accountId, buildingType);
         return res.json(buildings);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
 export async function getUpgradingBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        let query = { status: 'Upgrading' };
-        
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query)
-            .populate('account', 'username townHallLevel')
-            .sort({ upgradeEndTime: 1 }); // Sort by completion time
+        const buildings = await getUpgradingBuildingsService(req.user?.id, accountId);
 
         return res.json(buildings);
     } catch (error) {
@@ -313,20 +157,7 @@ export async function getUpgradingBuildings(req, res) {
 export async function getReadyBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        const now = new Date();
-        
-        let query = { 
-            status: 'Upgrading',
-            upgradeEndTime: { $lte: now }
-        };
-        
-        if (accountId) {
-            query.account = accountId;
-        }
-
-        const buildings = await Building.find(query)
-            .populate('account', 'username townHallLevel')
-            .sort({ upgradeEndTime: 1 });
+        const buildings = await getReadyBuildingsService(req.user?.id, accountId);
 
         return res.json(buildings);
     } catch (error) {
@@ -337,88 +168,18 @@ export async function getReadyBuildings(req, res) {
 export async function getBuildingUpgradeProgress(req, res) {
     try {
         const { id } = req.params;
-        const building = await Building.findById(id);
-        
-        if (!building) {
-            return res.status(404).json({ error: 'Building not found' });
-        }
-
-        if (building.status !== 'Upgrading') {
-            return res.status(400).json({ error: 'Building is not currently upgrading' });
-        }
-
-        const now = new Date();
-        const totalTime = building.upgradeTime * 1000; // Convert to milliseconds
-        const elapsedTime = now.getTime() - building.upgradeStartTime.getTime();
-        const progress = Math.min(100, Math.max(0, (elapsedTime / totalTime) * 100));
-        const timeRemaining = Math.max(0, building.upgradeEndTime.getTime() - now.getTime());
-
-        return res.json({
-            building: building,
-            progress: Math.round(progress),
-            timeRemaining: Math.round(timeRemaining / 1000), // in seconds
-            isReady: timeRemaining <= 0
-        });
+        const result = await getBuildingUpgradeProgressService(id);
+        return res.json(result);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(error.status || 500).json({ error: error.message });
     }
 }
 
 export async function getBuildingStats(req, res) {
     try {
         const { accountId } = req.params;
-        
-        const stats = await Building.aggregate([
-            { $match: { account: new mongoose.Types.ObjectId(accountId) } },
-            {
-                $group: {
-                    _id: null,
-                    totalBuildings: { $sum: 1 },
-                    maxedBuildings: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] 
-                        } 
-                    },
-                    upgradingBuildings: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] 
-                        } 
-                    },
-                    idleBuildings: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$status', 'Idle'] }, 1, 0] 
-                        } 
-                    },
-                    totalUpgrades: { $sum: '$currentLevel' }
-                }
-            }
-        ]);
-
-        const buildingTypeStats = await Building.aggregate([
-            { $match: { account: new mongoose.Types.ObjectId(accountId) } },
-            {
-                $group: {
-                    _id: '$buildingType',
-                    count: { $sum: 1 },
-                    maxed: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] 
-                        } 
-                    }
-                }
-            }
-        ]);
-
-        return res.json({
-            overall: stats[0] || {
-                totalBuildings: 0,
-                maxedBuildings: 0,
-                upgradingBuildings: 0,
-                idleBuildings: 0,
-                totalUpgrades: 0
-            },
-            byType: buildingTypeStats
-        });
+        const result = await getBuildingStatsService(accountId);
+        return res.json(result);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: error.message });
