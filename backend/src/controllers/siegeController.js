@@ -1,11 +1,12 @@
+import mongoose from 'mongoose';
 import Siege from '../models/Siege.js';
 import Account from '../models/Account.js';
-import { unlockSiegeService, startSiegeUpgradeService, finishSiegeUpgradeService, getSiegeUpgradeStatusService } from '../services/siegeService.js';
+import { unlockSiegeService, startSiegeUpgradeService, finishSiegeUpgradeService, getSiegeUpgradeStatusService, cancelSiegeUpgradeService } from '../services/siegeService.js';
 
 
 export async function getSiegesByAccountId(req, res) {
     try {
-        const accountId = req.params.accountId || req.query.accountId;
+        const accountId = req.params.accountId;
         
         if (!accountId) {
             return res.status(400).json({ error: 'accountId required' })
@@ -40,7 +41,8 @@ export async function getSiegeById(req, res) {
 
 export async function unlockSiege(req, res) {
     try {
-        const { accountId, siegeType, name } = req.body;
+        const { siegeType, name } = req.body;
+        const accountId = req.params.accountId || req.body.accountId;
         const input = siegeType || name; // frontend sends one identifier
 
         if (!accountId || !input) {
@@ -83,7 +85,8 @@ export async function getSiegeUpgradeStatus(req, res, next) {
 
 export async function startSiegeUpgrade(req, res) {
     try {
-        const { siegeId, upgradeTimeSec, upgradeCost = 0 } = req.body;
+        const siegeId = req.params.id || req.body?.siegeId;
+        const { upgradeTimeSec, upgradeCost = 0 } = req.body;
 
         if (!siegeId) {
         return res.status(400).json({ error: 'siegeId required' });
@@ -108,7 +111,7 @@ export async function startSiegeUpgrade(req, res) {
 
 export async function finishSiegeUpgrade(req, res, next) {
     try {
-        const { siegeId } = req.body;
+        const siegeId = req.params.id || req.body?.siegeId;
         if (!siegeId) return res.status(400).json({ error: 'siegeId required' });
 
         const siege = await finishSiegeUpgradeService(siegeId);
@@ -119,5 +122,24 @@ export async function finishSiegeUpgrade(req, res, next) {
         }
         console.log(e.message);
         return res.status(500).json({ error: 'Internal server error.'})
+    }
+}
+
+export async function cancelSiegeUpgrade(req, res) {
+    try {
+        const siegeId = req.params.id || req.body?.siegeId;
+        if (!siegeId) return res.status(400).json({ error: 'siegeId required' });
+
+        const siege = await cancelSiegeUpgradeService(siegeId);
+        return res.json({ siege, cancelled: true });
+    } catch (e) {
+        if (e.message === 'Siege not found') {
+            return res.status(404).json({ error: e.message });
+        }
+        if (e.message === 'Siege not currently upgrading') {
+            return res.status(400).json({ error: e.message });
+        }
+        console.log(e.message);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
