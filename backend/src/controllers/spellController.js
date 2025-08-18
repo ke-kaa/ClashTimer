@@ -1,118 +1,117 @@
-import mongoose from 'mongoose';
-import Spell from '../models/Spell.js';
-import { startUpgrade } from '../utils/upgradeUtils.js';
-import { createSpellService, getSpellsByAccountService, deleteSpellService, getSpellUpgradeStatusService } from '../services/spellService.js';
+import {
+    createSpellService,
+    getSpellsByAccountService,
+    getSpellByIdService,
+    deleteSpellService,
+    startSpellUpgradeService,
+    finishSpellUpgradeService,
+    cancelSpellUpgradeService,
+    getSpellUpgradeStatusService
+} from '../services/spellService.js';
 
-export async function createSpellController(req, res, next) {
+function handleError(res, error, fallbackMessage = 'Request failed') {
+    const status = error?.status || 500;
+    const payload = {
+        error: error?.message || fallbackMessage,
+        ...(error?.availableSpells ? { availableSpells: error.availableSpells } : {})
+    };
+    return res.status(status).json(payload);
+}
+
+function getAccountId(req) {
+    return req.params.accountId || req.accountId;
+}
+
+function getUserId(req) {
+    return req.user?.id || req.user?._id;
+}
+
+export async function createSpellController(req, res) {
     try {
-        const spell = await createSpellService(req.body);
-        res.status(201).json(spell);
-    } catch (err) {
-        res.status(err.status || 500).json({ message: err.message || 'Failed to create spell' });
+        const accountId = getAccountId(req);
+        const spell = await createSpellService(getUserId(req), accountId, req.body);
+        return res.status(201).json(spell);
+    } catch (error) {
+        return handleError(res, error, 'Failed to create spell');
     }
 }
 
 export async function getSpellsController(req, res) {
     try {
-        const { accountId } = req.query;
-
-        if (!accountId || !isId(accountId)) {
-            return res.status(400).json({ message: 'Valid accountId is required' });
-        }
-
-        const spells = await getSpellsByAccountService(accountId);
+        const accountId = getAccountId(req);
+        const spells = await getSpellsByAccountService(getUserId(req), accountId);
         return res.json(spells);
-
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).json({ 
-            error: 'Failed to fetch spells', 
-        });
+    } catch (error) {
+        return handleError(res, error, 'Failed to fetch spells');
     }
 }
 
 export async function getSpellByIdController(req, res) {
     try {
-        const spell = await getSpellByIdService(req.params.id);
-
-        if (spell.account.toString() !== req.user.id) {
-            throw { status: 403, message: 'Forbidden: You cannot access this spell' };
-        }
-
+        const spell = await getSpellByIdService(getUserId(req), req.params.id);
         return res.json(spell);
-    } catch (err) {
-
-        if ( err.message === "Forbidden: You cannot access this spell" ){
-            return res.status(404).json({ error: err.message });
-        }
-        
-        return res
-            .status(err?.status || 500)
-            .json({ message: err?.message || 'Failed to fetch spell' });
+    } catch (error) {
+        return handleError(res, error, 'Failed to fetch spell');
     }
 }
 
 export async function deleteSpellController(req, res) {
     try {
-        await deleteSpellService(req.params.id);
+        await deleteSpellService(getUserId(req), req.params.id);
         return res.json({ message: 'Spell deleted' });
-    } catch (err) {
-        console.log(err.message)
-        return res
-            .status(err?.status || 500)
-            .json({ message: 'Failed to delete spell' });
+    } catch (error) {
+        return handleError(res, error, 'Failed to delete spell');
     }
 }
 
 export async function startSpellUpgradeController(req, res) {
     try {
-        const { spellId, upgradeTimeSec, upgradeCost = 0 } = req.body;
-
-        if (!spellId){
-            return res.json(400).json({ error: "spellId required"});
-        }
-        if (upgradeTimeSec == null || isNaN(upgradeTimeSec) || upgradeTimeSec < 0) {
-            return res.status(400).json({ error: 'upgradeTimeSec must be >= 0' });
-        }
-
-        const result = await startSpellUpgradeService(spellId, upgradeTimeSec, upgradeCost);
-        return res.json(result)
-    } catch (err) {
-        if (err.message == 'Spell not found') return res.status(404).json({ error: err.message });
-        console.log(err.message)
-        return res.status(500).json({ message: 'Failed to start upgrade'});
+        const accountId = getAccountId(req);
+        const spellId = req.params.spellId || req.body?.spellId;
+        const result = await startSpellUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            spellId
+        });
+        return res.json(result);
+    } catch (error) {
+        return handleError(res, error, 'Failed to start upgrade');
     }
 }
 
-export async function finishSpellUpgradeController(req, res, next) {
+export async function finishSpellUpgradeController(req, res) {
     try {
-        const { spellId } = req.body;
-        if (!spellId) return res.status(400).json({ error: 'spellId required' });
+        const accountId = getAccountId(req);
+        const spellId = req.params.spellId || req.body?.spellId;
+        const spell = await finishSpellUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            spellId
+        });
+        return res.json({ spell, finished: true });
+    } catch (error) {
+        return handleError(res, error, 'Failed to finish upgrade');
+    }
+}
 
-        const spell = await finishSpellUpgradeService(spellId);
-        res.json({ spell, finished: true });
-    } catch (e) {
-        if (e.message = "spell not found"){
-            return res.status(404).json({ error: e.message });
-        }
-        console.log(e.message);
-        return res.status(500).json({ error: 'Internal server error.'})
+export async function cancelSpellUpgradeController(req, res) {
+    try {
+        const accountId = getAccountId(req);
+        const spellId = req.params.spellId || req.body?.spellId;
+        const spell = await cancelSpellUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            spellId
+        });
+        return res.json({ spell, cancelled: true });
+    } catch (error) {
+        return handleError(res, error, 'Failed to cancel upgrade');
     }
 }
 
 export async function getSpellUpgradeStatus(req, res) {
     try {
-        const { id } = req.params;
-        const spell = await Spell.findById(id);
-        
-        if (!spell) {
-            return res.status(404).json({ error: 'spell not found' });
-        }
-        
-        const status = getSpellUpgradeStatusService(spell);
-        res.json(status);
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).json({ message: 'Failed to get upgrade status' });
+        const spellId = req.params.id || req.query?.spellId;
+        const status = await getSpellUpgradeStatusService(getUserId(req), spellId);
+        return res.json(status);
+    } catch (error) {
+        return handleError(res, error, 'Failed to get upgrade status');
     }
 }
