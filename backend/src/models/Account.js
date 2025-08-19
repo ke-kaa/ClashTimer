@@ -1,17 +1,23 @@
 import mongoose, { Schema } from 'mongoose';
 
 const AccountSchema = new Schema({
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
     username: { type: String, required: true },
     playerTag: { 
         type: String, 
         unique: true, 
-        sparse: true, // Allows null values but ensures uniqueness when present
+        required: true,
         validate: {
             validator: function(v) {
-                // Player tag should start with # and be 8-9 characters total
-                return !v || /^#[A-Z0-9]{9,10}$/.test(v);
+                // Player tag must start with # followed by 9-10 uppercase letters or digits
+                return !v || /^#[A-Z0-9]{7, 9}$/.test(v);
             },
-            message: 'Player tag must start with # and be 7-8 characters after the # (e.g., #ABC1234)'
+            message: 'Player tag must start with # and include 9-10 characters after it (e.g., #ABC12DEF3)'
         }
     },
     townHallLevel: { 
@@ -36,6 +42,7 @@ const AccountSchema = new Schema({
     spells: [{ type: Schema.Types.ObjectId, ref: 'Spell' }],
     research: [{ type: Schema.Types.ObjectId, ref: 'Research' }],
     upgrades: [{ type: Schema.Types.ObjectId, ref: 'Upgrade' }],
+    walls: { type: Schema.Types.ObjectId, ref: 'WallGroup', default: null },
 }, { timestamps: true });
 
 export default mongoose.model("Account", AccountSchema);
