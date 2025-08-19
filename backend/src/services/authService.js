@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import * as tokenUtil from '../utils/tokenUtil.js';
 import bcrypt from 'bcryptjs';
-import { sendmail } from '../utils/emailUtil.js';
+import { sendEmail } from '../utils/emailUtil.js';
 import { config } from '../config/config.js';
 import crypto from 'crypto';
 
@@ -16,11 +16,11 @@ export async function regitrationService({ username, email, password }) {
         throw err
     };
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User.create({
-        username: usernameNorm, 
+    // IMPORTANT: Do NOT hash here — let the UserSchema pre('save') hook hash it once.
+    const newUser = new User({
+        username: usernameNorm,
         email: emailNorm,
-        password: hashedPassword,
+        password: password,
     });
 
     const accessToken = tokenUtil.signAccessToken(newUser);
@@ -28,8 +28,8 @@ export async function regitrationService({ username, email, password }) {
     const refreshTokenHashed = tokenUtil.hashToken(refreshTokenPlain);
     const refreshExpiresAt = tokenUtil.refreshTokenExpiryDate();
 
-    newUser.refershTokens = Array.isArray(newUser.refershTokens) ? newUser.refreshTokens : [];
-    newUser.refershTokens.push({ token: refreshTokenHashed, expiresAt: refreshExpiresAt });
+    newUser.refreshTokens = Array.isArray(newUser.refreshTokens) ? newUser.refreshTokens : [];
+    newUser.refreshTokens.push({ token: refreshTokenHashed, expiresAt: refreshExpiresAt });
     await newUser.save();
 
     return {
@@ -54,10 +54,14 @@ export async function loginService({ email, username, password }) {
     const isEmail = id.includes('@');
     const query = isEmail ? { email: id.toLowerCase() } : { username: id };
     const user = await User.findOne(query).select('+password');
-    if (!user) throw { status: 401, message: 'Invalid credentials' };
+    if (!user){
+        throw { status: 401, message: 'Invalid credentials' };
+    }
 
     if (user.lockUntil && user.lockUntil > Date.now()) {
-        return res.status(403).json({ message: 'Account locked due to failed login attempts. Try later.' });
+        const err = new Error('Account locked due to failed login attempts. Try later.');
+        err.status = 403;
+        throw err;
     }
 
     const ok = await user.comparePassword(password);
@@ -65,7 +69,7 @@ export async function loginService({ email, username, password }) {
         user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
 
         const allowedLoginAttempts = 5;
-        const lockTime = 360000 // milliseconds -> 1 hr
+        const lockTime = 60 * 60 * 1000; // 1 hour in ms
         if (user.failedLoginAttempts >= allowedLoginAttempts) {
             user.lockUntil = Date.now() + lockTime; 
         }
@@ -193,7 +197,7 @@ export async function forgotPasswordService({ email }) {
 
     // Send email (do not throw if mail fails to avoid info leak)
     try {
-        await sendmail({
+        await sendEmail({
         to: emailNorm,
         subject: 'Password reset',
         text: `Reset here: ${resetUrl}`,
