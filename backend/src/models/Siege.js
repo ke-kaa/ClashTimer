@@ -4,7 +4,7 @@ const SiegeSchema = new Schema({
     name: { type: String, required: true },
     siegeType: { 
         type: String, 
-        enum: ['Wall Wrecker', 'Battle Blimp', 'Stone Slammer', 'Log Launcher', 'Flame Flinger', 'Battle Drill'],
+        enum: ['Elixir'],
         required: true 
     },
     currentLevel: { 
