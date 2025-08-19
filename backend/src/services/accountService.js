@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Account from "../models/Account.js";
 import { itemsByTownHall, maxTownHallLevel } from "../utils/itemsByTownHall.js";  
 import Building from "../models/Building.js";
@@ -6,10 +7,12 @@ import Pet from "../models/Pet.js";
 import Siege from "../models/Siege.js";
 import Spell from "../models/Spell.js";
 import Troop from "../models/Troop.js";
+import WallGroup from "../models/WallGroup.js";
+import { createWallGroupForTownHall } from "./wallService.js";
 
 
-export async function getAccountsService({ clanTag, townHallLevel, playerTag, sortBy }) {
-    let query = {};
+export async function getAccountsService({ userId, clanTag, townHallLevel, playerTag, sortBy }) {
+    let query = { owner: userId };
 
     // Filter by clan tag if provided
     if (clanTag) {
@@ -48,14 +51,15 @@ export async function getAccountsService({ clanTag, townHallLevel, playerTag, so
     return accounts;
 }
 
-export async function getAccountDetailService(accountId){
-    const account = await Account.findById(accountId)
+export async function getAccountDetailService(userId, accountId){
+    const account = await Account.findOne({ _id: accountId, owner: userId })
         .populate('buildings')
         .populate('heroes')
         .populate('pets')
         .populate('siege')
         .populate('spells')
         .populate('troops')
+        .populate('walls')
     
     if (!account) throw { status: 404, message: 'Account not found' };
 
@@ -65,18 +69,29 @@ export async function getAccountDetailService(accountId){
     return account;
 }
 
-export async function createAccountService({ username, playerTag, townHallLevel, clanTag, preferences }) {
-    if (playerTag) {
-        const existingAccount = await Account.findOne({ playerTag });
-        if (existingAccount) {
-            const err = new Error('Player tag already exists.');
-            err.status = 404;
-            throw err;
-        }
-    }
-    const thData = itemsByTownHall[townHallLevel];
+export async function createAccountService({ userId, username, playerTag, townHallLevel, clanTag, preferences }) {
+    const session = await mongoose.startSession();
+    try {
+        let createdAccount = null;
+        await session.withTransaction(async () => {
+            if (playerTag) {
+                const existingAccount = await Account.findOne({ playerTag }).session(session);
+                if (existingAccount) {
+                    const err = new Error('Player tag already exists.');
+                    err.status = 404;
+                    throw err;
+                }
+            }
 
-    const account = new Account({
+            const thData = itemsByTownHall[townHallLevel];
+            if (!thData) {
+                const err = new Error('Invalid Town Hall level configuration');
+                err.status = 400;
+                throw err;
+            }
+
+            const account = new Account({
+                owner: userId,
                 username,
                 playerTag: playerTag || null,
                 townHallLevel,
@@ -87,106 +102,124 @@ export async function createAccountService({ username, playerTag, townHallLevel,
                     notifications: preferences?.notifications ?? true,
                     theme: preferences?.theme ?? 'light',
                     language: preferences?.language ?? 'en'
+                },
+                walls: null
+            });
+
+            const buildingIds = [];
+            const heroIds = [];
+            const troopIds = [];
+            const petIds = [];
+            const siegeIds = [];
+            const spellIds = [];
+
+            for (const b of thData.buildings ?? []) {
+                for (let i = 0; i < (b.count ?? 0); i++) {
+                    const building = new Building({
+                        name: b.name,
+                        buildingType: b.type || 'Special',
+                        currentLevel: 0,
+                        maxLevel: b.maxLevel,
+                        status: 'Idle',
+                        account: account._id
+                    });
+                    await building.save({ session });
+                    buildingIds.push(building._id);
                 }
-    });
+            }
 
-    let buildingIds = [], heroIds = [], troopIds = [], petIds = [], siegeIds = [], spellIds = [];
+            for (const h of thData.heroes ?? []) {
+                const hero = new Hero({
+                    name: h.name,
+                    heroType: h.type || h.name,
+                    currentLevel: 0,
+                    maxLevel: h.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await hero.save({ session });
+                heroIds.push(hero._id);
+            }
 
-    for (const b of thData.buildings) {
-        for (let i = 0; i < b.count; i++){
-            const building = new Building({
-            name: b.itemName,
-            buildingType: b.buildingType || 'Special', // Default to 'Special' if not specified
-            currentLevel: 0,
-            maxLevel: b.maxLevel,
-            status: 'Idle',
-            account: account._id
+            for (const p of thData.pets ?? []) {
+                const pet = new Pet({
+                    name: p.name,
+                    petType: p.name,
+                    currentLevel: 0,
+                    maxLevel: p.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await pet.save({ session });
+                petIds.push(pet._id);
+            }
+
+            for (const s of thData.sieges ?? []) {
+                const siege = new Siege({
+                    name: s.name,
+                    siegeType: s.type || s.name,
+                    currentLevel: 0,
+                    maxLevel: s.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await siege.save({ session });
+                siegeIds.push(siege._id);
+            }
+
+            for (const s of thData.spells ?? []) {
+                const spell = new Spell({
+                    name: s.name,
+                    spellType: s.type || 'Elixir',
+                    currentLevel: 0,
+                    maxLevel: s.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await spell.save({ session });
+                spellIds.push(spell._id);
+            }
+
+            for (const t of thData.troops ?? []) {
+                const troop = new Troop({
+                    name: t.name,
+                    troopType: t.type || 'Elixir',
+                    currentLevel: 0,
+                    maxLevel: t.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await troop.save({ session });
+                troopIds.push(troop._id);
+            }
+
+            account.buildings = buildingIds;
+            account.heroes = heroIds;
+            account.pets = petIds;
+            account.siege = siegeIds;
+            account.spells = spellIds;
+            account.troops = troopIds;
+
+            const wallGroup = await createWallGroupForTownHall({ accountId: account._id, townHallLevel }, { session });
+            if (wallGroup) {
+                account.walls = wallGroup._id;
+            }
+
+            await account.save({ session });
+            createdAccount = account;
         });
-            await building.save();
-            buildingIds.push(building._id)
+
+        if (!createdAccount) {
+            throw new Error('Account creation failed to commit.');
         }
+        return createdAccount;
+    } finally {
+        await session.endSession();
     }
-    
-    for (const h of thData.heroes) {
-        const hero = new Hero({
-            name: h.heroName,
-            heroType: h.heroType || h.heroName, // Use heroName as heroType if not specified
-            currentLevel: 0,
-            maxLevel: h.maxLevel,
-            status: 'Idle',
-            account: account._id
-        });
-            await hero.save();
-            heroIds.push(hero._id);
-    }
-    
-    for (const p of thData.pets) {
-        const pet = new Pet({
-            name: p.petName,
-            petType: p.petType || p.petName, // Use petName as petType if not specified
-            currentLevel: 0,
-            maxLevel: p.maxLevel,
-            status: 'Idle',
-            account: account._id
-        });
-            await pet.save();
-            petIds.push(pet._id);
-    }
-    
-    for (const s of thData.sieges) {
-        const siege = new Siege({
-                name: s.siegeName,
-                siegeType: s.siegeType || s.siegeName, // Use siegeName as siegeType if not specified
-                currentLevel: 0,
-                maxLevel: s.maxLevel,
-                status: 'Idle',
-                account: account._id
-            });
-        await siege.save();
-        siegeIds.push(siege._id);
-    }
-    
-    for (const s of thData.spells) {
-        const spell = new Spell({
-                name: s.spellName,
-                spellType: s.spellType || 'Elixir', // Default to 'Elixir' if not specified
-                currentLevel: 0,
-                maxLevel: s.maxLevel,
-                status: 'Idle',
-                account: account._id
-            });
-        await spell.save();
-        spellIds.push(spell._id);
-    }
-    
-    for (const t of thData.troops) {
-        const troop = new Troop({
-                name: t.troopName,
-                troopType: t.troopType || 'Elixir', // Default to 'Elixir' if not specified
-                currentLevel: 0,
-                maxLevel: t.maxLevel,
-                status: 'Idle',
-                account: account._id
-            });
-            await troop.save();
-            troopIds.push(troop._id);
-    }
-    
-    account.buildings = buildingIds;
-    account.heroes = heroIds;
-    account.pets = petIds;
-    account.siege = siegeIds;
-    account.spells = spellIds;
-    account.troops = troopIds;
-    
-    await account.save();
-
-    return account;
-
 }
 
-export async function updateAccountService({id, username, playerTag, townHallLevel, clanTag, preferences }) {
-    const account = await Account.findById(id);
+export async function updateAccountService({ userId, id, username, playerTag, townHallLevel, clanTag, preferences }) {
+    const account = await Account.findOne({ _id: id, owner: userId });
 
     if (!account) {
         const err = new Error('Account not found');
@@ -239,8 +272,8 @@ export async function updateAccountService({id, username, playerTag, townHallLev
     await account.save();
 }
 
-export async function deleteAccountService(accountId) {
-    const account = await Account.findById(accountId);
+export async function deleteAccountService(userId, accountId) {
+    const account = await Account.findOne({ _id: accountId, owner: userId });
 
     if (!account) {
         const err = new Error('Account not found');
@@ -248,16 +281,17 @@ export async function deleteAccountService(accountId) {
         throw err;
     }
 
-    const [ buildingRes,heroRes, petRes, siegeRes, spellRes, troopRes, researchRes, upgradeRes ] = await Promise.all([
+    const [ buildingRes,heroRes, petRes, siegeRes, spellRes, troopRes ] = await Promise.all([
         Building.deleteMany({ account: accountId }),
         Hero.deleteMany({ account: accountId }),
         Pet.deleteMany({ account: accountId }),
         Siege.deleteMany({ account: accountId }),
         Spell.deleteMany({ account: accountId }),
         Troop.deleteMany({ account: accountId }),
-        Research.deleteMany({ account: accountId }),
-        Upgrade.deleteMany({ account: accountId })
     ]);
+
+    // Remove walls group if exists
+    await WallGroup.deleteOne({ account: accountId });
 
     await Account.findByIdAndDelete(accountId);
 
@@ -271,19 +305,24 @@ export async function deleteAccountService(accountId) {
             sieges: siegeRes.deletedCount || 0,
             spells: spellRes.deletedCount || 0,
             troops: troopRes.deletedCount || 0,
-            research: researchRes.deletedCount || 0,
-            upgrades: upgradeRes.deletedCount || 0
         }
     };
 }
 
-export async function getAccountStatsService(accountId) {
-    const account = await Account.findById(accountId);
+export async function getAccountStatsService(userId, accountId) {
+    const account = await Account.findOne({ _id: accountId, owner: userId });
     if (!account) {
         const err = new Error('Account not found');
         err.status = 404;
         throw err;
     }
+
+    const wallGroup = await ensureAccountWallGroup(account);
+    if (account.isModified('walls')) {
+        await account.save();
+    }
+
+    const wallStats = buildWallStats(wallGroup);
 
     const [ buildingStats, heroStats, troopStats, petStats, siegeStats, spellStats ] = await Promise.all([
         Building.aggregate([
@@ -342,7 +381,7 @@ export async function getAccountStatsService(accountId) {
             }
         ]),
         Spell.aggregate([
-            { $match: { account: account._id } },
+            { $match: { account: account._id } }, 
             {
                 $group: {
                     _id: null,
@@ -368,14 +407,15 @@ export async function getAccountStatsService(accountId) {
         troops: troopStats[0] || { total: 0, maxed: 0, upgrading: 0 },
         pets: petStats[0] || { total: 0, maxed: 0, upgrading: 0 },
         sieges: siegeStats[0] || { total: 0, maxed: 0, upgrading: 0 },
-        spells: spellStats[0] || { total: 0, maxed: 0, upgrading: 0 }
+        spells: spellStats[0] || { total: 0, maxed: 0, upgrading: 0 },
+        walls: wallStats
     };
 }
 
-export async function getAccountsByClanService({ clanTag, sortBy }) {
+export async function getAccountsByClanService({ userId, clanTag, sortBy }) {
     if (!clanTag) throw { status: 400, message: 'clanTag is required' };
 
-    let accounts = await Account.find({ clanTag });
+    let accounts = await Account.find({ clanTag, owner: userId });
 
     if (sortBy) {
         switch (sortBy) {
@@ -398,12 +438,12 @@ export async function getAccountsByClanService({ clanTag, sortBy }) {
     return accounts;
 }
 
-export async function updateAccountPreferencesService({ accountId, preferences }) {
+export async function updateAccountPreferencesService({ userId, accountId, preferences }) {
     if (!preferences || typeof preferences !== 'object') {
         throw { status: 400, message: 'preferences object is required' };
     }
 
-    const account = await Account.findById(accountId);
+    const account = await Account.findOne({ _id: accountId, owner: userId });
     if (!account) throw { status: 404, message: 'Account not found' };
 
     account.preferences = {
@@ -416,18 +456,16 @@ export async function updateAccountPreferencesService({ accountId, preferences }
     return account.preferences;
 }
 
-export async function getAccountByPlayerTagService(playerTag) {
+export async function getAccountByPlayerTagService(userId, playerTag) {
     if (!playerTag) throw { status: 400, message: 'playerTag is required' };
 
-    const account = await Account.findOne({ playerTag })
+    const account = await Account.findOne({ playerTag, owner: userId })
         .populate('buildings')
         .populate('heroes')
         .populate('pets')
         .populate('siege')
         .populate('spells')
         .populate('troops')
-        .populate('research')
-        .populate('upgrades');
 
     if (!account) throw { status: 404, message: 'Account not found' };
 
@@ -437,16 +475,16 @@ export async function getAccountByPlayerTagService(playerTag) {
     return account;
 }
 
-export async function searchAccountsService({ q, type, limit = 20 }) {
+export async function searchAccountsService({ userId, q, type, limit = 20 }) {
     if (!q) throw { status: 400, message: 'Search query is required' };
 
     const regex = { $regex: q, $options: 'i' };
-    let query = {};
+    let query = { owner: userId };
 
     if (type === 'playerTag') {
-        query.playerTag = regex;
+    query.playerTag = regex;
     } else if (type === 'username') {
-        query.username = regex;
+    query.username = regex;
     } else {
         query.$or = [
             { username: regex },
@@ -460,3 +498,4 @@ export async function searchAccountsService({ q, type, limit = 20 }) {
 
     return accounts;
 }
+
