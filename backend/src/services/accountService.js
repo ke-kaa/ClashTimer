@@ -499,3 +499,59 @@ export async function searchAccountsService({ userId, q, type, limit = 20 }) {
     return accounts;
 }
 
+async function ensureAccountWallGroup(account) {
+    if (!account) return null;
+
+    let wallGroup = null;
+
+    if (account.walls) {
+        wallGroup = await WallGroup.findById(account.walls);
+    }
+
+    if (!wallGroup) {
+        wallGroup = await createWallGroupForTownHall({
+            accountId: account._id,
+            townHallLevel: account.townHallLevel
+        });
+
+        if (wallGroup) {
+            account.walls = wallGroup._id;
+        }
+    }
+
+    return wallGroup;
+}
+
+function buildWallStats(wallGroup) {
+    const data = wallGroup?.toObject?.() ?? wallGroup ?? null;
+
+    if (!data) {
+        return {
+            total: 0,
+            maxed: 0,
+            maxLevel: 0,
+            perLevel: []
+        };
+    }
+
+    const segments = data.segments ?? data.levels ?? [];
+    const baseLevel = data.maxLevel ?? data.currentLevel ?? 0;
+    const total = segments.reduce((sum, seg) => sum + (seg?.count ?? 0), 0);
+    const maxLevel = segments.reduce(
+        (max, seg) => Math.max(max, seg?.level ?? seg?.currentLevel ?? max),
+        baseLevel
+    );
+    const maxed = segments.reduce((sum, seg) => {
+        const level = seg?.level ?? seg?.currentLevel ?? 0;
+        return level >= maxLevel ? sum + (seg?.count ?? 0) : sum;
+    }, 0);
+    const perLevel = segments
+        .map(seg => ({
+            level: seg?.level ?? seg?.currentLevel ?? 0,
+            count: seg?.count ?? 0
+        }))
+        .sort((a, b) => a.level - b.level);
+
+    return { total, maxed, maxLevel, perLevel };
+}
+
