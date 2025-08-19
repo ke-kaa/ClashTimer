@@ -1,116 +1,117 @@
-import Troop from "../models/Troop.js";
-import { createTroopService, getTroopsByAccountService, getTroopByIdService, deleteTroopService, startTroopUpgradeService, finishTroopUpgradeService, getTroopUpgradeStatusService  } from "../services/troopService.js";
+import {
+    createTroopService,
+    getTroopsByAccountService,
+    getTroopByIdService,
+    deleteTroopService,
+    startTroopUpgradeService,
+    finishTroopUpgradeService,
+    cancelTroopUpgradeService,
+    getTroopUpgradeStatusService
+} from '../services/troopService.js';
 
-export async function createTroopController(req, res, next) {
+function handleError(res, error, fallbackMessage = 'Request failed') {
+    const status = error?.status || 500;
+    const payload = {
+        error: error?.message || fallbackMessage,
+        ...(error?.availableTroops ? { availableTroops: error.availableTroops } : {})
+    };
+    return res.status(status).json(payload);
+}
+
+function getUserId(req) {
+    return req.user?.id || req.user?._id;
+}
+
+function getAccountId(req) {
+    return req.params.accountId || req.accountId;
+}
+
+export async function createTroopController(req, res) {
     try {
-        const troop = await createTroopService(req.body);
-        res.status(201).json(troop);
-    } catch (err) {
-        res.status(err.status || 500).json({ message: err.message || 'Failed to create troop' });
+        const accountId = getAccountId(req);
+        const troop = await createTroopService(getUserId(req), accountId, req.body);
+        return res.status(201).json(troop);
+    } catch (error) {
+        return handleError(res, error, 'Failed to create troop');
     }
 }
 
 export async function getTroopsByAccountIdController(req, res) {
     try {
-        const { accountId } = req.query;
-
-        if (!accountId || !isId(accountId)) {
-            return res.status(400).json({ message: 'Valid accountId is required' });
-        }
-
-        const troops = await getTroopsByAccountService(accountId);
+        const accountId = getAccountId(req);
+        const troops = await getTroopsByAccountService(getUserId(req), accountId);
         return res.json(troops);
-
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).json({ 
-            error: 'Failed to fetch troops', 
-        });
+    } catch (error) {
+        return handleError(res, error, 'Failed to fetch troops');
     }
 }
 
 export async function getTroopByIdController(req, res) {
     try {
-        const troop = await getTroopByIdService(req.params.id);
-
-        if (troop.account.toString() !== req.user.id) {
-            throw { status: 403, message: 'Forbidden: You cannot access this troop' };
-        }
-
+        const troop = await getTroopByIdService(getUserId(req), req.params.id);
         return res.json(troop);
-    } catch (err) {
-
-        if ( err.message === "Forbidden: You cannot access this troop" ){
-            return res.status(404).json({ error: err.message });
-        }
-        
-        return res
-            .status(err?.status || 500)
-            .json({ message: err?.message || 'Failed to fetch troop' });
+    } catch (error) {
+        return handleError(res, error, 'Failed to fetch troop');
     }
 }
 
 export async function deleteTroopController(req, res) {
     try {
-        await deleteTroopService(req.params.id);
+        await deleteTroopService(getUserId(req), req.params.id);
         return res.json({ message: 'Troop deleted' });
-    } catch (err) {
-        console.log(err.message)
-        return res
-            .status(err?.status || 500)
-            .json({ message: 'Failed to delete troop' });
+    } catch (error) {
+        return handleError(res, error, 'Failed to delete troop');
     }
 }
 
 export async function startTroopUpgradeController(req, res) {
     try {
-        const { troopId, upgradeTimeSec, upgradeCost = 0 } = req.body;
-
-        if (!troopId){
-            return res.json(400).json({ error: "troopId required"});
-        }
-        if (upgradeTimeSec == null || isNaN(upgradeTimeSec) || upgradeTimeSec < 0) {
-            return res.status(400).json({ error: 'upgradeTimeSec must be >= 0' });
-        }
-
-        const result = await startTroopUpgradeService(troopId, upgradeTimeSec, upgradeCost);
-        return res.json(result)
-    } catch (err) {
-        if (err.message == 'troop not found') return res.status(404).json({ error: err.message });
-        console.log(err.message)
-        return res.status(500).json({ message: 'Failed to start upgrade'});
+        const accountId = getAccountId(req);
+        const troopId = req.params.troopId || req.body?.troopId;
+        const result = await startTroopUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            troopId
+        });
+        return res.json(result);
+    } catch (error) {
+        return handleError(res, error, 'Failed to start upgrade');
     }
 }
 
-export async function finishTroopUpgradeController(req, res, next) {
+export async function finishTroopUpgradeController(req, res) {
     try {
-        const { troopId } = req.body;
-        if (!troopId) return res.status(400).json({ error: 'troopId required' });
+        const accountId = getAccountId(req);
+        const troopId = req.params.troopId || req.body?.troopId;
+        const troop = await finishTroopUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            troopId
+        });
+        return res.json({ troop, finished: true });
+    } catch (error) {
+        return handleError(res, error, 'Failed to finish upgrade');
+    }
+}
 
-        const troop = await finishTroopUpgradeService(troopId);
-        res.json({ siege, finished: true });
-    } catch (e) {
-        if (e.message = "Troop not found"){
-            return res.status(404).json({ error: e.message });
-        }
-        console.log(e.message);
-        return res.status(500).json({ error: 'Internal server error.'})
+export async function cancelTroopUpgradeController(req, res) {
+    try {
+        const accountId = getAccountId(req);
+        const troopId = req.params.troopId || req.body?.troopId;
+        const troop = await cancelTroopUpgradeService(getUserId(req), accountId, {
+            ...req.body,
+            troopId
+        });
+        return res.json({ troop, cancelled: true });
+    } catch (error) {
+        return handleError(res, error, 'Failed to cancel upgrade');
     }
 }
 
 export async function getTroopUpgradeStatus(req, res) {
     try {
-        const { id } = req.params;
-        const troop = await troop.findById(id);
-        
-        if (!troop) {
-            return res.status(404).json({ error: 'Siege not found' });
-        }
-        
-        const status = getTroopUpgradeStatusService(troop);
-        res.json(status);
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).json({ message: 'Failed to get upgrade status' });
+        const troopId = req.params.id || req.query?.troopId;
+        const status = await getTroopUpgradeStatusService(getUserId(req), troopId);
+        return res.json(status);
+    } catch (error) {
+        return handleError(res, error, 'Failed to get upgrade status');
     }
 }
