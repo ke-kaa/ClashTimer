@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from 'bcryptjs';
-import uniqueValidator from 'mongoose-unique-validator';
 
 const RefreshTokenSchema = new mongoose.Schema({
     token: { type: String, required: true }, // hashed token
@@ -35,11 +34,11 @@ UserSchema.pre('save', async function (next) {
     next();
 });
 
-userSchema.methods.comparePassword = function(candidate) {
+UserSchema.methods.comparePassword = function(candidate) {
     return bcrypt.compare(candidate, this.password);
 };
 
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp /* seconds */) {
+UserSchema.methods.changedPasswordAfter = function(JWTTimestamp /* seconds */) {
     if (this.passwordChangedAt) {
         const changedTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
         return JWTTimestamp < changedTimestamp;
