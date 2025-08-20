@@ -169,3 +169,69 @@ export async function getUpgradeableBuildingsService(userId, accountId) {
     };
     return Building.find(query).populate('account', 'username townHallLevel');
 }
+
+export async function getMaxedBuildingsService(userId, accountId) {
+    if (!accountId) {
+        const err = new Error('accountId is required');
+        err.status = 400;
+        throw err;
+    }
+    await ensureAccountOwned(userId, accountId);
+    const query = {
+        account: accountId,
+        $expr: { $eq: ['$currentLevel', '$maxLevel'] }
+    };
+    return Building.find(query).populate('account', 'username townHallLevel');
+}
+
+export async function validateBuildingUpgradeService(id) {
+    const building = await Building.findById(id);
+    if (!building) {
+        const err = new Error('Building not found');
+        err.status = 404;
+        throw err;
+    }
+    const canUpgrade = building.status === 'Idle' && building.currentLevel < building.maxLevel;
+    return {
+        canUpgrade,
+        currentLevel: building.currentLevel,
+        maxLevel: building.maxLevel,
+        status: building.status,
+        reason: canUpgrade
+        ? 'Building can be upgraded'
+        : building.status === 'Upgrading'
+        ? 'Building is currently upgrading'
+        : building.currentLevel >= building.maxLevel
+        ? 'Building is at maximum level'
+        : 'Unknown reason',
+    };
+}
+
+export async function getBuildingsByBuildingTypeService(userId, accountId, buildingType) {
+    if (!['Resource', 'Defense', 'Army', 'Storage', 'Wall', 'Trap', 'Special'].includes(buildingType)) {
+        const err = new Error('Invalid building type');
+        err.status = 400;
+        throw err;
+    }
+    if (!accountId) {
+        const err = new Error('accountId is required');
+        err.status = 400;
+        throw err;
+    }
+    await ensureAccountOwned(userId, accountId);
+    const query = { buildingType, account: accountId };
+    return Building.find(query).populate('account', 'username townHallLevel');
+}
+
+export async function getUpgradingBuildingsService(userId, accountId) {
+    if (!accountId) {
+        const err = new Error('accountId is required');
+        err.status = 400;
+        throw err;
+    }
+    await ensureAccountOwned(userId, accountId);
+    const query = { status: 'Upgrading', account: accountId };
+    return Building.find(query)
+        .populate('account', 'username townHallLevel')
+        .sort({ upgradeEndTime: 1 });
+}
