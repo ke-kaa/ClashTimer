@@ -235,3 +235,81 @@ export async function getUpgradingBuildingsService(userId, accountId) {
         .populate('account', 'username townHallLevel')
         .sort({ upgradeEndTime: 1 });
 }
+
+export async function getReadyBuildingsService(userId, accountId) {
+    if (!accountId) {
+        const err = new Error('accountId is required');
+        err.status = 400;
+        throw err;
+    }
+    await ensureAccountOwned(userId, accountId);
+    const now = new Date();
+    const query = { status: 'Upgrading', upgradeEndTime: { $lte: now }, account: accountId };
+    return Building.find(query)
+        .populate('account', 'username townHallLevel')
+        .sort({ upgradeEndTime: 1 });
+}
+
+export async function getBuildingUpgradeProgressService(id) {
+    const building = await Building.findById(id);
+    if (!building) {
+        const err = new Error('Building not found');
+        err.status = 404;
+        throw err;
+    }
+    if (building.status !== 'Upgrading') {
+        const err = new Error('Building is not currently upgrading');
+        err.status = 400;
+        throw err;
+    }
+    const now = new Date();
+    const totalTime = building.upgradeTime * 1000;
+    const elapsedTime = now.getTime() - building.upgradeStartTime.getTime();
+    const progress = Math.min(100, Math.max(0, (elapsedTime / totalTime) * 100));
+    const timeRemaining = Math.max(0, building.upgradeEndTime.getTime() - now.getTime());
+    return {
+        building,
+        progress: Math.round(progress),
+        timeRemaining: Math.round(timeRemaining / 1000),
+        isReady: timeRemaining <= 0,
+    };
+}
+
+export async function getBuildingStatsService(accountId) {
+    const stats = await Building.aggregate([
+        { $match: { account: new mongoose.Types.ObjectId(accountId) } },
+        {
+        $group: {
+            _id: null,
+            totalBuildings: { $sum: 1 },
+            maxedBuildings: { $sum: { $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] } },
+            upgradingBuildings: { $sum: { $cond: [{ $eq: ['$status', 'Upgrading'] }, 1, 0] } },
+            idleBuildings: { $sum: { $cond: [{ $eq: ['$status', 'Idle'] }, 1, 0] } },
+            totalUpgrades: { $sum: '$currentLevel' },
+        },
+        },
+    ]);
+
+    const buildingTypeStats = await Building.aggregate([
+        { $match: { account: new mongoose.Types.ObjectId(accountId) } },
+        {
+        $group: {
+            _id: '$buildingType',
+            count: { $sum: 1 },
+            maxed: { $sum: { $cond: [{ $eq: ['$currentLevel', '$maxLevel'] }, 1, 0] } },
+        },
+        },
+    ]);
+
+    return {
+        overall:
+        stats[0] || {
+            totalBuildings: 0,
+            maxedBuildings: 0,
+            upgradingBuildings: 0,
+            idleBuildings: 0,
+            totalUpgrades: 0,
+        },
+        byType: buildingTypeStats,
+    };
+}
