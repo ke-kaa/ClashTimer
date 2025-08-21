@@ -85,3 +85,22 @@ export async function finishSiegeUpgradeService(siegeId) {
     await updatedSiege.save();
     return updatedSiege;
 }
+
+export async function cancelSiegeUpgradeService(siegeId) {
+    const siege = await Siege.findById(siegeId);
+    if (!siege) {
+        throw { status: 404, message: 'Siege not found' };
+    }
+
+    if (siege.status !== 'Upgrading') {
+        throw { status: 400, message: 'Siege not currently upgrading' };
+    }
+
+    siege.status = 'Idle';
+    siege.upgradeStartTime = null;
+    siege.upgradeEndTime = null;
+    siege.upgradeCost = 0;
+    siege.upgradeTime = 0;
+    await siege.save();
+    return siege;
+}
