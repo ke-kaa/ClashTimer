@@ -1,6 +1,7 @@
 import { Router } from 'express';
+import { requireAuth } from '../middlewares/authMiddleware.js';
+import { ensureBuildingOwnershipFromParam, ensureAccountAccessFromParam, ensureAccountAccessFromBody } from '../middlewares/ownershipMiddleware.js';
 import {
-    getAllBuildings,
     getBuildingById,
     getBuildingsByAccount,
     updateBuildingLevel,
@@ -21,55 +22,56 @@ import {
 
 const router = Router();
 
-// GET /api/buildings
-router.get('/', getAllBuildings);
 
-// GET /api/buildings/upgrading
-router.get('/upgrading', getUpgradingBuildings);
+// requires accountId as a query parameter
+// GET /api/buildings/upgrading -----
+router.get('/upgrading', requireAuth, getUpgradingBuildings);
 
-// GET /api/buildings/ready
-router.get('/ready', getReadyBuildings);
+// GET /api/buildings/ready -----
+router.get('/ready', requireAuth, getReadyBuildings);
 
-// GET /api/buildings/upgradeable
-router.get('/upgradeable', getUpgradeableBuildings);
+// GET /api/buildings/upgradeable -----
+router.get('/upgradeable', requireAuth, getUpgradeableBuildings);
 
-// GET /api/buildings/maxed
-router.get('/maxed', getMaxedBuildings);
+// GET /api/buildings/maxed -----
+router.get('/maxed', requireAuth, getMaxedBuildings);
 
-// GET /api/buildings/status/:status
-router.get('/status/:status', getBuildingsByStatus);
+// add accountId as query parameter 
+// GET /api/buildings/status/:status -----
+router.get('/status/:status', requireAuth, getBuildingsByStatus);
 
-// GET /api/buildings/type/:buildingType
-router.get('/type/:buildingType', getBuildingsByType);
+// add accountId as query parameter 
+// GET /api/buildings/type/:buildingType ----
+router.get('/type/:buildingType', requireAuth, getBuildingsByType);
 
-// GET /api/buildings/category/:buildingType
-router.get('/category/:buildingType', getBuildingsByBuildingType);
+// GET /api/buildings/category/:buildingType -----
+router.get('/category/:buildingType', requireAuth, getBuildingsByBuildingType);
 
-// GET /api/buildings/:id
-router.get('/:id', getBuildingById);
+// GET /api/buildings/:id ----
+router.get('/:id', requireAuth, ensureBuildingOwnershipFromParam('id'), getBuildingById);
 
-// GET /api/buildings/:id/upgrade/status
-router.get('/:id/upgrade/status', getBuildingUpgradeProgress);
+// GET /api/buildings/:id/upgrade/status ----
+router.get('/:id/upgrade/status', requireAuth, ensureBuildingOwnershipFromParam('id'), getBuildingUpgradeProgress);
 
-// GET /api/buildings/:id/upgrade/validate
-router.get('/:id/upgrade/validate', validateBuildingUpgrade);
+// GET /api/buildings/:id/upgrade/validate ----
+router.get('/:id/upgrade/validate', requireAuth, ensureBuildingOwnershipFromParam('id'), validateBuildingUpgrade);
 
-// PATCH /api/buildings/:id/level
-router.patch('/:id/level', updateBuildingLevel);
+// PATCH /api/buildings/:id/level ----
+router.patch('/:id/level', requireAuth, ensureBuildingOwnershipFromParam('id'), updateBuildingLevel);
 
-// POST /api/buildings/:id/upgrade/start
-router.post('/:id/upgrade/start', startBuildingUpgrade);
+// POST /api/buildings/:id/upgrade/start ----
+router.post('/:id/upgrade/start', requireAuth, ensureBuildingOwnershipFromParam('id'), startBuildingUpgrade);
 
-// POST /api/buildings/:id/upgrade/finish
-router.post('/:id/upgrade/finish', completeBuildingUpgrade);
+// POST /api/buildings/:id/upgrade/finish -----
+router.post('/:id/upgrade/finish', requireAuth, ensureBuildingOwnershipFromParam('id'), completeBuildingUpgrade);
 
-// POST /api/buildings/:id/upgrade/cancel
-router.post('/:id/upgrade/cancel', cancelBuildingUpgrade);
+// POST /api/buildings/:id/upgrade/cancel ----
+router.post('/:id/upgrade/cancel', requireAuth, ensureBuildingOwnershipFromParam('id'), cancelBuildingUpgrade);
 
-// GET /api/accounts/:accountId/buildings
-router.get('/account/:accountId/list', getBuildingsByAccount);
+// GET /api/accounts/:accountId/buildings ---- 
+router.get('/account/:accountId/list', requireAuth, ensureAccountAccessFromParam('accountId'), getBuildingsByAccount);
 
-// GET /api/accounts/:accountId/buildings/stats
-router.get('/account/:accountId/stats', getBuildingStats);
+// GET /api/accounts/:accountId/buildings/stats ---- 
+router.get('/account/:accountId/stats', requireAuth, ensureAccountAccessFromParam('accountId'), getBuildingStats);
 
 export default router;
