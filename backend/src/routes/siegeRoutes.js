@@ -1,34 +1,37 @@
 import { Router } from 'express';
+import { requireAuth } from '../middlewares/authMiddleware.js';
+import { ensureSiegeOwnershipFromParam, ensureAccountAccessFromParam } from '../middlewares/ownershipMiddleware.js';
 import {
     getSiegesByAccountId,
     getSiegeById,
     unlockSiege,
     getSiegeUpgradeStatus,
     startSiegeUpgrade,
-    finishSiegeUpgrade
+    finishSiegeUpgrade,
+    cancelSiegeUpgrade
 } from '../controllers/siegeController.js';
 
 const router = Router();
 
-// GET /api/sieges?accountId=...
-router.get('/', getSiegesByAccountId);
+// GET /api/account/:accountId -----
+router.get('/account/:accountId', requireAuth, ensureAccountAccessFromParam('accountId'), getSiegesByAccountId);
 
-// GET /api/accounts/:accountId/sieges
-router.get('/account/:accountId', getSiegesByAccountId);
+// GET /api/sieges/:id -----
+router.get('/:id', requireAuth, ensureSiegeOwnershipFromParam('id'), getSiegeById);
 
-// GET /api/sieges/:id
-router.get('/:id', getSiegeById);
+// POST /api/accounts/:accountId/sieges/unlock
+router.post('/account/:accountId/unlock', requireAuth, ensureAccountAccessFromParam('accountId'), unlockSiege);
 
-// POST /api/sieges/unlock
-router.post('/unlock', unlockSiege);
+// GET /api/sieges/:id/upgrade/status 
+router.get('/:id/upgrade/status', requireAuth, ensureSiegeOwnershipFromParam('id'), getSiegeUpgradeStatus);
 
-// GET /api/sieges/:id/upgrade/status
-router.get('/:id/upgrade/status', getSiegeUpgradeStatus);
+// POST /api/sieges/:id/upgrade/start -------
+router.post('/:id/upgrade/start', requireAuth, ensureSiegeOwnershipFromParam('id'), startSiegeUpgrade);
 
-// POST /api/sieges/upgrade/start
-router.post('/upgrade/start', startSiegeUpgrade);
+// POST /api/sieges/:id/upgrade/finish ----
+router.post('/:id/upgrade/finish', requireAuth, ensureSiegeOwnershipFromParam('id'), finishSiegeUpgrade);
 
-// POST /api/sieges/upgrade/finish
-router.post('/upgrade/finish', finishSiegeUpgrade);
+// POST /api/sieges/:id/upgrade/cancel ----
+router.post('/:id/upgrade/cancel', requireAuth, ensureSiegeOwnershipFromParam('id'), cancelSiegeUpgrade);
 
 export default router;
