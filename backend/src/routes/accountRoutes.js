@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { requireAuth } from '../middlewares/authMiddleware.js';
+import { ensureAccountAccessFromParam } from '../middlewares/ownershipMiddleware.js';
 import {
     getAccounts,
     getAccountDetail,
@@ -14,34 +16,34 @@ import {
 
 const router = Router();
 
-// GET /api/accounts
-router.get('/', getAccounts);
+// GET /api/accounts -----------
+router.get('/', requireAuth, getAccounts); 
 
-// GET /api/accounts/search?q=term
-router.get('/search', searchAccounts);
+// POST /api/accounts ------------
+router.post('/', requireAuth, createAccount);
 
-// GET /api/accounts/playerTag/:playerTag
-router.get('/playerTag/:playerTag', getAccountByPlayerTag);
+// GET /api/accounts/search?q=term -----------
+router.get('/search', requireAuth, searchAccounts);
 
-// GET /api/accounts/:id
-router.get('/:id', getAccountDetail);
+// GET /api/accounts/playerTag/:playerTag ----------
+router.get('/playerTag/:playerTag', requireAuth, getAccountByPlayerTag);
 
-// GET /api/accounts/:id/stats
-router.get('/:id/stats', getAccountStats);
+// GET /api/accounts/:id ------------
+router.get('/:id', requireAuth, ensureAccountAccessFromParam('id'), getAccountDetail);
+
+// GET /api/accounts/:id/stats -----------
+router.get('/:id/stats', requireAuth, ensureAccountAccessFromParam('id'), getAccountStats);
 
 // PATCH /api/accounts/:id/preferences
-router.patch('/:id/preferences', updateAccountPreferences);
-
-// POST /api/accounts
-router.post('/', createAccount);
+router.patch('/:id/preferences', requireAuth, ensureAccountAccessFromParam('id'), updateAccountPreferences);
 
 // PATCH /api/accounts/:id
-router.patch('/:id', updateAccount);
+router.patch('/:id', requireAuth, ensureAccountAccessFromParam('id'), updateAccount);
 
 // DELETE /api/accounts/:id
-router.delete('/:id', deleteAccount);
+router.delete('/:id', requireAuth, ensureAccountAccessFromParam('id'), deleteAccount);
 
 // GET /api/clans/:clanTag/accounts
-router.get('/clan/by/:clanTag/list', getAccountsByClan); // alt path if you prefer: /api/clans/:clanTag/accounts
+router.get('/clan/by/:clanTag/list', requireAuth, getAccountsByClan); // alt path if you prefer: /api/clans/:clanTag/accounts
 
 export default router;
