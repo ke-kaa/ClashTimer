@@ -1,58 +1,99 @@
 import Spell from '../models/Spell.js';
-import { isId } from '../utils/validationUtils.js';
-import { normalizeKey } from '../utils/convertUtils.js'
 import Account from '../models/Account.js';
+import { normalizeKey } from '../utils/convertUtils.js';
 import { itemsByTownHall } from '../utils/itemsByTownHall.js';
 import { startUpgrade, finishUpgrade, canFinishUpgrade } from '../utils/upgradeUtils.js';
 import { computeUpgradeStatus } from '../utils/computeUpgradeStatusUtils.js';
 
-export async function createSpellService({ accountId, name, spellName, currentLevel }) {
-    if (!isId(accountId)) throw { status: 400, message: 'Invalid accountId' };
+function createError(message, status = 400) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+}
+
+function requireUserId(userId) {
+    if (!userId) {
+        throw createError('Authentication required', 401);
+    }
+}
+
+async function assertAccountOwnership(userId, accountId, projection) {
+    requireUserId(userId);
+    if (!accountId) {
+        throw createError('accountId is required', 400);
+    }
+
+    const query = Account.findOne({ _id: accountId, owner: userId });
+    if (projection) {
+        query.select(projection);
+    } else {
+        query.select('_id');
+    }
+
+    const account = await query;
+    if (!account) {
+        throw createError('Account not found', 404);
+    }
+    return account;
+}
+
+async function findOwnedSpellById(userId, spellId) {
+    requireUserId(userId);
+    if (!spellId) {
+        throw createError('spellId is required', 400);
+    }
+
+    const spell = await Spell.findById(spellId);
+    if (!spell) {
+        throw createError('Spell not found', 404);
+    }
+
+    const ownsAccount = await Account.exists({ _id: spell.account, owner: userId });
+    if (!ownsAccount) {
+        throw createError('Forbidden', 403);
+    }
+
+    return spell;
+}
+
+export async function createSpellService(userId, accountId, { name, spellName, currentLevel } = {}) {
+    const account = await assertAccountOwnership(userId, accountId, 'townHallLevel spells');
 
     const inputName = name || spellName;
-    if (!inputName) throw { status: 400, message: 'spell name is required' };
+    if (!inputName) {
+        throw createError('spell name is required', 400);
+    }
 
-    // Load account to read TH level
-    const account = await Account.findById(accountId);
-    if (!account) throw { status: 404, message: 'Account not found' };
-
-    const th = account.townHallLevel;
-    const thConfig = itemsByTownHall?.[th];
+    const thLevel = account.townHallLevel;
+    const thConfig = itemsByTownHall?.[thLevel];
     if (!thConfig || !Array.isArray(thConfig.spells)) {
-        throw { status: 400, message: `No spell configuration for Town Hall ${th}` };
+        throw createError(`No spell configuration for Town Hall ${thLevel}`, 400);
     }
 
-    // Find the spell in TH config
     const targetKey = normalizeKey(inputName);
-    const spellEntry = thConfig.spells.find(s => normalizeKey(s.spellName) === targetKey);
-
+    const spellEntry = thConfig.spells.find(s => normalizeKey(s.spellName ?? s.name) === targetKey);
     if (!spellEntry) {
-        throw {
-        status: 404,
-        message: 'Spell not available at this Town Hall',
-        availableSpells: thConfig.spells.map(s => s.spellName)
-        };
+        const err = createError('Spell not available at this Town Hall', 404);
+        err.availableSpells = thConfig.spells.map(s => s.spellName ?? s.name).filter(Boolean);
+        throw err;
     }
 
-    const canonicalName = spellEntry.spellName;
+    const canonicalName = spellEntry.spellName ?? spellEntry.name;
     const derivedMaxLevel = spellEntry.maxLevel ?? 1;
     const derivedType = spellEntry.type ?? 'Elixir';
-    if (!derivedType) {
-        throw { status: 500, message: `Missing spellType mapping for ${canonicalName}` };
-    }
     const derivedHousing = spellEntry.housingSpace ?? 1;
 
-    // Duplicate check by canonical name for this account
-    const existing = await Spell.findOne({ account: accountId, name: canonicalName });
-    if (existing) throw { status: 409, message: 'Spell already exists for this account' };
-
-    // Validate/derive current level
-    const lvl = currentLevel ?? 0;
-    if (lvl < 0 || lvl > derivedMaxLevel) {
-        throw { status: 400, message: `currentLevel must be between 0 and ${derivedMaxLevel}` };
+    const duplicate = await Spell.findOne({ account: accountId, name: canonicalName });
+    if (duplicate) {
+        throw createError('Spell already exists for this account', 409);
     }
 
-    const spell = await Spell.create({
+    const lvl = currentLevel ?? 0;
+    if (lvl < 0 || lvl > derivedMaxLevel) {
+        throw createError(`currentLevel must be between 0 and ${derivedMaxLevel}`, 400);
+    }
+
+    const spell = new Spell({
         name: canonicalName,
         spellType: derivedType,
         currentLevel: lvl,
@@ -61,66 +102,126 @@ export async function createSpellService({ accountId, name, spellName, currentLe
         status: 'Idle',
         account: accountId
     });
+    await spell.save();
 
-    account.spells.push(spell.id);
-    await account.save();
-
-
-    return spell;
-}
-
-export async function getSpellsByAccountService({ accountId }) {
-    return await Spell.find({ accoun: accountId }).sort({ createdAt: -1 });
-}
-
-export async function getSpellByIdService(id) {
-    if (!isId(id)) {
-        throw { status: 400, message: 'Invalid spell id' };
-    }
-
-    const spell = await Spell.findById(id).populate('account');
-    if (!spell) {
-        throw { status: 404, message: 'Spell not found' };
+    if (Array.isArray(account.spells)) {
+        account.spells.push(spell._id);
+        await account.save();
+    } else {
+        await Account.findByIdAndUpdate(accountId, { $addToSet: { spells: spell._id } });
     }
 
     return spell;
 }
 
-export async function deleteSpellService(id) {
-    if (!isId(id)) {
-        throw { status: 400, message: 'Invalid spell id' };
-    }
-
-    const spell = await Spell.findByIdAndDelete(id);
-    if (!spell) {
-        throw { status: 404, message: 'Spell not found' };
-    }
-
-    return spell; 
+export async function getSpellsByAccountService(userId, accountId) {
+    await assertAccountOwnership(userId, accountId);
+    return Spell.find({ account: accountId }).sort({ createdAt: -1 });
 }
 
-export async function startSpellUpgradeService(spellId, upgradeTimeSec, upgradeCost) {
-    const spell = await Spell.findById(spellId);
-    if (!spell) throw new Error('Spell not found');
-
-    return await startUpgrade(spell, upgradeTimeSec, upgradeCost);
+export async function getSpellByIdService(userId, spellId) {
+    return findOwnedSpellById(userId, spellId);
 }
 
-export async function finishSpellUpgradeService(spellId) {
-    const spell = await spell.findById(spellId);
-    if (!spell) {
-        throw { status: 404, message: 'spell not found' };
-    }
-
-    if (!canFinishUpgrade(spell)) {
-        throw { status: 400, message: 'No active upgrade or upgrade not finished yet' };
-    }
-
-    const updatedspell = finishUpgrade(spell);
-    await updatedspell.save();
-    return updatedspell;
+export async function deleteSpellService(userId, spellId) {
+    const spell = await findOwnedSpellById(userId, spellId);
+    await Account.findByIdAndUpdate(spell.account, { $pull: { spells: spell._id } });
+    await spell.deleteOne();
+    return { deleted: true, spellId: spell._id };
 }
 
-export function getSpellUpgradeStatusService(spell) {
+export async function startSpellUpgradeService(userId, accountId, { spellId, upgradeTimeSec, upgradeCost } = {}) {
+    await assertAccountOwnership(userId, accountId);
+    if (!spellId) {
+        throw createError('spellId required', 400);
+    }
+    if (upgradeTimeSec === undefined || upgradeTimeSec === null) {
+        throw createError('upgradeTimeSec required', 400);
+    }
+
+    const time = Number(upgradeTimeSec);
+    if (!Number.isFinite(time) || time < 0) {
+        throw createError('upgradeTimeSec must be a non-negative number', 400);
+    }
+
+    const spell = await findOwnedSpellById(userId, spellId);
+    if (spell.account.toString() !== accountId.toString()) {
+        throw createError('Spell does not belong to this account', 403);
+    }
+    if (spell.status === 'Upgrading') {
+        throw createError('Spell already upgrading', 409);
+    }
+    if (spell.currentLevel >= spell.maxLevel) {
+        throw createError('Spell already at max level', 400);
+    }
+
+    if (time === 0) {
+        spell.currentLevel = Math.min(spell.currentLevel + 1, spell.maxLevel);
+        spell.status = 'Idle';
+        spell.upgradeStartTime = null;
+        spell.upgradeEndTime = null;
+        spell.upgradeTime = 0;
+        spell.upgradeCost = Number(upgradeCost) || 0;
+        await spell.save();
+        return { spell, instant: true };
+    }
+
+    const now = new Date();
+    spell.status = 'Upgrading';
+    spell.upgradeStartTime = now;
+    spell.upgradeEndTime = new Date(now.getTime() + time * 1000);
+    spell.upgradeTime = time;
+    spell.upgradeCost = Number(upgradeCost) || 0;
+    await spell.save();
+    return spell;
+}
+
+export async function finishSpellUpgradeService(userId, accountId, { spellId } = {}) {
+    await assertAccountOwnership(userId, accountId);
+    if (!spellId) {
+        throw createError('spellId required', 400);
+    }
+
+    const spell = await findOwnedSpellById(userId, spellId);
+    if (spell.account.toString() !== accountId.toString()) {
+        throw createError('Spell does not belong to this account', 403);
+    }
+    if (spell.status !== 'Upgrading') {
+        throw createError('Spell not upgrading', 400);
+    }
+    // if (!canFinishUpgrade(spell)) {
+    //     throw createError('No active upgrade or upgrade not finished yet', 400);
+    // }
+
+    finishUpgrade(spell);
+    await spell.save();
+    return spell;
+}
+
+export async function cancelSpellUpgradeService(userId, accountId, { spellId } = {}) {
+    await assertAccountOwnership(userId, accountId);
+    if (!spellId) {
+        throw createError('spellId required', 400);
+    }
+
+    const spell = await findOwnedSpellById(userId, spellId);
+    if (spell.account.toString() !== accountId.toString()) {
+        throw createError('Spell does not belong to this account', 403);
+    }
+    if (spell.status !== 'Upgrading') {
+        throw createError('Spell not upgrading', 400);
+    }
+
+    spell.status = 'Idle';
+    spell.upgradeStartTime = null;
+    spell.upgradeEndTime = null;
+    spell.upgradeTime = 0;
+    spell.upgradeCost = 0;
+    await spell.save();
+    return spell;
+}
+
+export async function getSpellUpgradeStatusService(userId, spellId) {
+    const spell = await findOwnedSpellById(userId, spellId);
     return computeUpgradeStatus(spell);
 }
