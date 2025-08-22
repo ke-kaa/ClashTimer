@@ -32,9 +32,10 @@ export const itemsByTownHall = {
             { name: 'Barracks', count: 1, currentLevel: 0, maxLevel: 4, type: 'Army' },
             { name: 'Cannon', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Archer Tower', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 25, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
         ],
+
+        'walls': { name: 'Walls', count: 25, currentLevel: 0, maxLevel: 2, type: 'Defense'  },
 
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 1, type: 'Elixir', housingSpace: 1 },
@@ -65,10 +66,12 @@ export const itemsByTownHall = {
             { name: 'Cannon', count: 2, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Archer Tower', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Mortar', count: 1, currentLevel: 0, maxLevel: 1, type: 'Defense' },
-            { name: 'Walls', count: 50, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Bomb', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 50, currentLevel: 0, maxLevel: 3, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 2,  type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 2, type: 'Elixir', housingSpace: 1 },
@@ -96,11 +99,13 @@ export const itemsByTownHall = {
             { name: 'Archer Tower', count: 2, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Mortar', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Air Defense', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 75, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Bomb', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
             { name: 'Spring Trap', count: 2, currentLevel: 0, maxLevel: 1, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 75, currentLevel: 0, maxLevel: 4, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 2, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 2, type: 'Elixir', housingSpace: 1 },
@@ -131,12 +136,14 @@ export const itemsByTownHall = {
             { name: 'Mortar', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Air Defense', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Wizard Tower', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 100, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Bomb', count: 4, currentLevel: 0, maxLevel: 3, type: 'Trap' },
             { name: 'Spring Trap', count: 2, currentLevel: 0, maxLevel: 1, type: 'Trap' },
             { name: 'Air Bomb', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 100, currentLevel: 0, maxLevel: 5, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 3, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 3, type: 'Elixir', housingSpace: 1 },
@@ -171,13 +178,15 @@ export const itemsByTownHall = {
             { name: 'Air Defense', count: 2, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Wizard Tower', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Air Sweeper', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 125, currentLevel: 0, maxLevel: 6, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Bomb', count: 4, currentLevel: 0, maxLevel: 3, type: 'Trap' },
             { name: 'Spring Trap', count: 4, currentLevel: 0, maxLevel: 1, type: 'Trap' },
             { name: 'Giant Bomb', count: 1, currentLevel: 0, maxLevel: 2, type: 'Trap' },
             { name: 'Air Bomb', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 125, currentLevel: 0, maxLevel: 6, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 3, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 3, type: 'Elixir', housingSpace: 1 },
@@ -222,7 +231,6 @@ export const itemsByTownHall = {
             { name: 'Wizard Tower', count: 2, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Air Sweeper', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Hidden Tesla', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
-            { name: 'Walls', count: 175, currentLevel: 0, maxLevel: 7, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 4, type: 'Trap' },
@@ -231,6 +239,9 @@ export const itemsByTownHall = {
             { name: 'Air Bomb', count: 2, currentLevel: 0, maxLevel: 3, type: 'Trap' },
             { name: 'Seeking Air Mine', count: 1, currentLevel: 0, maxLevel: 1, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 175, currentLevel: 0, maxLevel: 7, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 4, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 4, type: 'Elixir', housingSpace: 1 },
@@ -284,7 +295,6 @@ export const itemsByTownHall = {
             { name: 'Air Sweeper', count: 1, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Hidden Tesla', count: 3, currentLevel: 0, maxLevel: 6, type: 'Defense' },
             { name: 'Bomb Tower', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 225, currentLevel: 0, maxLevel: 8, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 5, type: 'Trap' },
@@ -294,6 +304,9 @@ export const itemsByTownHall = {
             { name: 'Seeking Air Mine', count: 1, currentLevel: 0, maxLevel: 1, type: 'Trap' },
             { name: 'Skeleton Traps', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 225, currentLevel: 0, maxLevel: 8, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 5, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 5, type: 'Elixir' , housingSpace: 1 },
@@ -353,7 +366,6 @@ export const itemsByTownHall = {
             { name: 'Hidden Tesla', count: 4, currentLevel: 0, maxLevel: 7, type: 'Defense' },
             { name: 'Bomb Tower', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'X-Bow', count: 3, currentLevel: 0, maxLevel: 3, type: 'Defense' },
-            { name: 'Walls', count: 250, currentLevel: 0, maxLevel: 10, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 6, type: 'Trap' },
@@ -363,7 +375,9 @@ export const itemsByTownHall = {
             { name: 'Seeking Air Mine', count: 2, currentLevel: 0, maxLevel: 2, type: 'Trap' },
             { name: 'Skeleton Traps', count: 3, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
-
+        
+        'walls': { name: 'Walls', count: 250, currentLevel: 0, maxLevel: 10, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 6, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 6, type: 'Elixir', housingSpace: 1 },
@@ -433,7 +447,6 @@ export const itemsByTownHall = {
             { name: 'Bomb Tower', count: 2, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'X-Bow', count: 4, currentLevel: 0, maxLevel: 4, type: 'Defense' },
             { name: 'Inferno Tower', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
-            { name: 'Walls', count: 275, currentLevel: 0, maxLevel: 11, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 7, type: 'Trap' },
@@ -443,6 +456,9 @@ export const itemsByTownHall = {
             { name: 'Seeking Air Mine', count: 3, currentLevel: 0, maxLevel: 3, type: 'Trap' },
             { name: 'Skeleton Traps', count: 3, currentLevel: 0, maxLevel: 4, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 275, currentLevel: 0, maxLevel: 11, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 7, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 7, type: 'Elixir', housingSpace: 1 },
@@ -519,7 +535,6 @@ export const itemsByTownHall = {
             { name: 'Inferno Tower', count: 2, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             { name: 'Eagle Artillery', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
-            { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 12, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 8, type: 'Trap' },
             { name: 'Spring Trap', count: 6, currentLevel: 0, maxLevel: 5, type: 'Trap' },
@@ -529,6 +544,9 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 3, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 2, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 12, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 7, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 7, type: 'Elixir', housingSpace: 1 },
@@ -612,7 +630,6 @@ export const itemsByTownHall = {
             { name: 'Eagle Artillery', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Giga Tesla TH12', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
-            { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 13, type: 'Defense' },
             
             { name: 'Bomb', count: 6, currentLevel: 0, maxLevel: 8, type: 'Trap' },
             { name: 'Spring Trap', count: 8, currentLevel: 0, maxLevel: 5, type: 'Trap' },
@@ -622,6 +639,9 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 3, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 13, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 9, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 9, type: 'Elixir', housingSpace: 1 },
@@ -656,9 +676,9 @@ export const itemsByTownHall = {
         ],
         'pets': [],
         'sieges': [
-            { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 3, type: 'Wall Wrecker' },
-            { name: 'Battle Blimp', currentLevel: 0, maxLevel: 3, type: 'Battle Blimp' },
-            { name: 'Stone Slammer', currentLevel: 0, maxLevel: 3, type: 'Stone Slammer' },
+            { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 3, type: 'Elixir' },
+            { name: 'Battle Blimp', currentLevel: 0, maxLevel: 3, type: 'Elixir' },
+            { name: 'Stone Slammer', currentLevel: 0, maxLevel: 3, type: 'Elixir' },
         ],
         'spells': [
             { name: 'Lightning', currentLevel: 0, maxLevel: 9, type: 'Elixir', housingSpace: 1 },
@@ -713,7 +733,6 @@ export const itemsByTownHall = {
             { name: 'Scattershot', count: 2, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             { name: 'Giga Inferno TH13', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
-            { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 14, type: 'Defense' },
             
             { name: 'Bomb', count: 7, currentLevel: 0, maxLevel: 9, type: 'Trap' },
             { name: 'Spring Trap', count: 9, currentLevel: 0, maxLevel: 5, type: 'Trap' },
@@ -723,6 +742,8 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 3, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 300, currentLevel: 0, maxLevel: 14, type: 'Defense' },
 
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 9, type: 'Elixir', housingSpace: 1 },
@@ -764,11 +785,11 @@ export const itemsByTownHall = {
         'pets': [],
 
         'sieges': [
-            { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 4, type: 'Wall Wrecker' },
-            { name: 'Battle Blimp', currentLevel: 0, maxLevel: 4, type: 'Battle Blimp' },
-            { name: 'Stone Slammer', currentLevel: 0, maxLevel: 4, type: 'Stone Slammer' },
-            { name: 'Seige Barracks', currentLevel: 0, maxLevel: 4, type: 'Seige Barracks' },
-            { name: 'Log Launcher', currentLevel: 0, maxLevel: 4, type: 'Log Launcher' },
+            { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Battle Blimp', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Stone Slammer', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Siege Barracks', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Log Launcher', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
         ],
 
         'spells': [
@@ -824,7 +845,6 @@ export const itemsByTownHall = {
             { name: 'Eagle Artillery', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             { name: 'Scattershot', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 4, type: 'Defense' },
-            { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 15, type: 'Defense' },
             { name: 'Giga Inferno TH14', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             
             { name: 'Bomb', count: 8, currentLevel: 0, maxLevel: 10, type: 'Trap' },
@@ -835,6 +855,9 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 4, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+        
+        'walls': { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 15, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 10, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 10, type: 'Elixir', housingSpace: 1 },
@@ -881,7 +904,7 @@ export const itemsByTownHall = {
             { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Battle Blimp', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Stone Slammer', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
-            { name: 'Seige Barracks', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Siege Barracks', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Log Launcher', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Flame Flinger', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
         ],
@@ -941,7 +964,6 @@ export const itemsByTownHall = {
             { name: 'Builders Hut', count: 5, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             { name: 'Spell Tower', count: 2, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Monolith', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 16, type: 'Defense' },
             { name: 'Giga Inferno TH15', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
             
             { name: 'Bomb', count: 8, currentLevel: 0, maxLevel: 11, type: 'Trap' },
@@ -952,6 +974,9 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 4, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 16, type: 'Defense' },
+        
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 11, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 11, type: 'Elixir', housingSpace: 1 },
@@ -976,7 +1001,7 @@ export const itemsByTownHall = {
             { name: 'Valkyrie', currentLevel: 0, maxLevel: 10, type: 'Dark Elixir', housingSpace: 8 },
             { name: 'Golem', currentLevel: 0, maxLevel: 12, type: 'Dark Elixir', housingSpace: 30 },
             { name: 'Witch', currentLevel: 0, maxLevel: 6, type: 'Dark Elixir', housingSpace: 12 },
-            { name: 'Lava Hound', currentLevel: 0, maxLevel: 'x', type: 'Dark Elixir', housingSpace: 30 },
+            { name: 'Lava Hound', currentLevel: 0, maxLevel: 6, type: 'Dark Elixir', housingSpace: 30 },
             { name: 'Bowler', currentLevel: 0, maxLevel: 7, type: 'Dark Elixir', housingSpace: 6 },
             { name: 'Ice Golem', currentLevel: 0, maxLevel: 7, type: 'Dark Elixir', housingSpace: 15 },
             { name: 'Headhunter', currentLevel: 0, maxLevel: 3, type: 'Dark Elixir', housingSpace: 6 },
@@ -1005,7 +1030,7 @@ export const itemsByTownHall = {
             { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Battle Blimp', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Stone Slammer', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
-            { name: 'Seige Barracks', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
+            { name: 'Siege Barracks', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Log Launcher', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Flame Flinger', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Battle Drill', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
@@ -1069,7 +1094,6 @@ export const itemsByTownHall = {
             { name: 'Monolith', count: 1, currentLevel: 0, maxLevel: 3, type: 'Defense' },
             { name: 'Ricochet Cannon', count: 2, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Multi-Archer Tower', count: 2, currentLevel: 0, maxLevel: 2, type: 'Defense' },
-            { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 17, type: 'Defense' },
             { name: 'Giga Inferno TH16', count: 1, currentLevel: 0, maxLevel: 1, type: 'Defense' },
             
             { name: 'Bomb', count: 8, currentLevel: 0, maxLevel: 12, type: 'Trap' },
@@ -1080,6 +1104,9 @@ export const itemsByTownHall = {
             { name: 'Skeleton Traps', count: 4, currentLevel: 0, maxLevel: 4, type: 'Trap' },
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 17, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 12, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 12, type: 'Elixir', housingSpace: 1 },
@@ -1136,7 +1163,7 @@ export const itemsByTownHall = {
             { name: 'Wall Wrecker', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Battle Blimp', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Stone Slammer', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
-            { name: 'Seige Barracks', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
+            { name: 'Siege Barracks', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Log Launcher', currentLevel: 0, maxLevel: 5, type: 'Elixir' },
             { name: 'Flame Flinger', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
             { name: 'Battle Drill', currentLevel: 0, maxLevel: 4, type: 'Elixir' },
@@ -1202,7 +1229,6 @@ export const itemsByTownHall = {
             { name: 'Multi-Gear Tower', count: 1, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Firespitter', count: 2, currentLevel: 0, maxLevel: 2, type: 'Defense' },
             { name: 'Inferno Artillery', count: 1, currentLevel: 0, maxLevel: 5, type: 'Defense' },
-            { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 18, type: 'Defense' },
 
             { name: 'Bomb', count: 8, currentLevel: 0, maxLevel: 13, type: 'Trap' },
             { name: 'Spring Trap', count: 9, currentLevel: 0, maxLevel: 5, type: 'Trap' },
@@ -1213,6 +1239,9 @@ export const itemsByTownHall = {
             { name: 'Tornado Trap', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
             { name: 'Giga Bomb', count: 1, currentLevel: 0, maxLevel: 3, type: 'Trap' },
         ],
+
+        'walls': { name: 'Walls', count: 325, currentLevel: 0, maxLevel: 18, type: 'Defense' },
+
         'troops': [
             { name: 'Barbarian', currentLevel: 0, maxLevel: 12, type: 'Elixir', housingSpace: 1 },
             { name: 'Archer', currentLevel: 0, maxLevel: 13, type: 'Elixir', housingSpace: 1 },
