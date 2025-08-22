@@ -4,33 +4,47 @@ import handlebars from 'handlebars';
 import { promises as fs } from 'fs';
 import { config } from '../config/config.js';
 
-const transporter = nodemailer.createTransport({
-    host: config.mail.host,
-    port: Number(config.mail.port),
-    secure: config.mail.port === '465',
-    auth: {
-        user: config.mail.user,
-        pass: config.mail.pass,
-    },
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 100,
-    tls: {
-        rejectUnauthorized: config.env === 'production',
-    },
-});
+let transporter = null;
+let emailEnabled = Boolean(config.mail?.enabled);
 
-transporter.verify((error) => {
-    if (error) {
-        console.error('SMTP connection failed:', error);
-        throw new Error('Failed to connect to SMTP server');
-    } else {
-        console.log('SMTP transporter ready');
-    }
-});
+if (emailEnabled) {
+    transporter = nodemailer.createTransport({
+        host: config.mail.host,
+        port: Number(config.mail.port),
+        secure: config.mail.port === '465',
+        auth: {
+            user: config.mail.user,
+            pass: config.mail.pass,
+        },
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        tls: {
+            rejectUnauthorized: config.env === 'production',
+        },
+    });
+
+    transporter.verify((error) => {
+        if (error) {
+            console.error('SMTP connection failed:', error);
+            console.warn('Disabling email delivery. Check SMTP settings or network connectivity.');
+            emailEnabled = false;
+            transporter = null;
+        } else {
+            console.log('SMTP transporter ready');
+        }
+    });
+} else {
+    console.warn('Email delivery disabled: missing SMTP configuration.');
+}
 
 export async function sendEmail({ to, subject, template, context, text, attachments }) {
     try {
+        if (!emailEnabled || !transporter) {
+            console.info(`Email delivery skipped for ${to}. SMTP disabled or unavailable.`);
+            return { success: false, skipped: true, reason: 'Email delivery disabled' };
+        }
+
         // Validate recipients
         const recipients = Array.isArray(to) ? to : [to];
         for (const email of recipients) {
