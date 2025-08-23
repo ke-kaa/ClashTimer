@@ -34,8 +34,8 @@ if (config.env !== 'test') app.use(morgan('dev'));
 app.get('/api/health', async (_req, res) => {
     res.json({
         status: 'ok',
-        app: APP_NAME,
-        env: NODE_ENV,
+        app: config.appName,
+        env: config.env,
         version: (await pkg).version,
         time: new Date().toISOString()
     });
@@ -54,7 +54,7 @@ app.use((req, res, _next) => {
 app.use((err, _req, res, _next) => {
     const status = err?.status || 500;
     const message = err?.message || err?.error || 'Internal Server Error';
-    if (NODE_ENV !== 'test') {
+    if (config.env !== 'test') {
         console.error('[Error]', {
         status,
         message,
