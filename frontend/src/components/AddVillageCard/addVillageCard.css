@@ -1,0 +1,19 @@
+.add-village-outer{
+    background: linear-gradient(180deg, rgba(8,12,16,1), rgba(4,8,12,1));
+    border-radius: 14px;
+    /* 1px stroke using brand color */
+    border: 1px solid #a0e1fd;
+    box-shadow: 0 0 0 3px rgba(160,225,253,0.06), 0 6px 20px rgba(0,0,0,0.6);
+}
+
+/* small adjustments */
+.add-village-outer input::placeholder{
+    color: #7f8f96;
+}
+
+.add-village-outer button{cursor:pointer}
+
+/* small visual tweaks */
+.add-village-outer .border-b{opacity:0.6}
+.add-village-outer .w-px{width:1px}
+.add-village-outer .h-6{height:24px}
