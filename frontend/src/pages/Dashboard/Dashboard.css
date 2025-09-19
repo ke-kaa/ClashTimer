@@ -1,0 +1,39 @@
+@keyframes loop-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.animate-loop-scroll {
+    display: flex;
+    width: max-content;
+    animation: loop-scroll 40s linear infinite;
+}
+
+.animate-loop-scroll:hover {
+    animation-play-state: paused;
+}
+
+.stat-card {
+    flex-shrink: 0;
+}
+
+.marquee-container::before,
+.marquee-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px; /*  width of the fade effect */
+    z-index: 2;
+    pointer-events: none;
+}
+
+.marquee-container::before {
+    left: 0;
+    background: linear-gradient(to right, #0c1220 10%, transparent);
+}
+
+.marquee-container::after {
+    right: 0;
+    background: linear-gradient(to left, #0c1220 10%, transparent);
+}
