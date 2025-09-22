@@ -1,0 +1,50 @@
+body {
+    color: #fff;
+}
+
+.content-container {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.wizard {
+    width: 200px;
+    height: 161px;
+}
+
+input {
+    display: block;
+}
+
+.gradient-border {
+    background: radial-gradient(circle at 100% 100%, #0c1220 0, #0c1220 118px, transparent 118px) 0% 0%/122px 122px no-repeat,
+            radial-gradient(circle at 0 100%, #0c1220 0, #0c1220 118px, transparent 118px) 100% 0%/122px 122px no-repeat,
+            radial-gradient(circle at 100% 0, #0c1220 0, #0c1220 118px, transparent 118px) 0% 100%/122px 122px no-repeat,
+            radial-gradient(circle at 0 0, #0c1220 0, #0c1220 118px, transparent 118px) 100% 100%/122px 122px no-repeat,
+            linear-gradient(#0c1220, #0c1220) 50% 50%/calc(100% - 8px) calc(100% - 244px) no-repeat,
+            linear-gradient(#0c1220, #0c1220) 50% 50%/calc(100% - 244px) calc(100% - 8px) no-repeat,
+            linear-gradient(90deg, #c36b1e 0%, rgba(195, 107, 30, 1) 10%, rgba(160, 225, 253, 1) 90%, #a0e1fd 100%);
+    border-radius: 122px;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.signin {
+    background: linear-gradient(to right, #a0e1fd, #c36b1e); 
+    -webkit-background-clip: text;  
+    background-clip: text;
+    color: transparent;
+    font-weight: 900;
+    margin-top: 35px;
+    margin-bottom: 35px;
+}
+
+.submit {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.signup-redirect {
+    margin-bottom: 5rem;
+}
+
