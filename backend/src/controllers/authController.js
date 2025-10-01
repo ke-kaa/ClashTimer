@@ -9,10 +9,14 @@ const COOKIE_OPTIONS = {
 };
 
 export async function registerUserController(req, res) {
-    const { username, email, password } = req.body || {};
+    const { username, email, password, confirm_password } = req.body || {};
 
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'username, email and password are required' });
+    if (!username || !email || !password || !confirm_password) {
+        return res.status(400).json({ error: 'username, email, password and confirm_password are required' });
+    }
+
+    if (password !== confirm_password) {
+        return res.status(400).json({ error: 'Passwords do not match' });
     }
 
     try {
