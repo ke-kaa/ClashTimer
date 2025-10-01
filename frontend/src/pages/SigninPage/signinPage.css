@@ -16,7 +16,7 @@ input {
     display: block;
 }
 
-.gradient-border {
+.gradient-border-two {
     background: radial-gradient(circle at 100% 100%, #0c1220 0, #0c1220 118px, transparent 118px) 0% 0%/122px 122px no-repeat,
             radial-gradient(circle at 0 100%, #0c1220 0, #0c1220 118px, transparent 118px) 100% 0%/122px 122px no-repeat,
             radial-gradient(circle at 100% 0, #0c1220 0, #0c1220 118px, transparent 118px) 0% 100%/122px 122px no-repeat,
