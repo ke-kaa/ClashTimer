@@ -1,5 +1,6 @@
 import React from 'react'
 import './landingPage.css'
+import { Link } from 'react-router-dom' // Import the Link component
 import axe from '../../assets/cocAssets/landingPage/axe.png'
 import builder from '../../assets/cocAssets/landingPage/builder.png'
 import clock from '../../assets/cocAssets/landingPage/clock.png'
@@ -18,7 +19,11 @@ export default function LandingPage() {
 						<h2 className="hero-headline">UPGRADE SMARTER. CLASH FASTER.</h2>
 						<p className="hero-subtitle">Track upgrades to optimize your progress.</p>
 						<div style={{ textAlign: 'center' }}>
-							<button className="hero-cta">Get Started</button>
+							<button to="/signup" className="hero-cta">
+								<Link to="/signup" href="">
+									Get Started
+								</Link>
+							</button>
 						</div>
 					</div>
 					<div className="builder-character">
