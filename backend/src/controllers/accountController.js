@@ -1,4 +1,4 @@
-import { getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
+import { getAccountsForDashboardService, getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
 
 export async function getAccounts(req, res) {
     try {
@@ -6,6 +6,16 @@ export async function getAccounts(req, res) {
         if (!userId) return res.status(401).json({ error: 'Authentication required' });
         const { clanTag, townHallLevel, playerTag, sortBy } = req.query;
         let accounts = await getAccountsService({ userId, clanTag, townHallLevel, playerTag, sortBy });
+        return res.json(accounts);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export async function getAccountsForDashboardController(req, res){
+    try {
+        const userId = req.user.id;
+        const accounts = await getAccountsForDashboardService(userId);
         return res.json(accounts);
     } catch (error) {
         return res.status(500).json({ error: error.message });

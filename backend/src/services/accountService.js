@@ -51,6 +51,14 @@ export async function getAccountsService({ userId, clanTag, townHallLevel, playe
     return accounts;
 }
 
+export async function getAccountsForDashboardService(userId){
+    let accounts = await Account.find({ owner: userId })
+        .select('username playerTag townHallLevel clanTag lastActive totalUpgrades preferences')
+        .sort({ lastActive: -1 });
+
+    return accounts;
+}
+
 export async function getAccountDetailService(userId, accountId){
     const account = await Account.findOne({ _id: accountId, owner: userId })
         .populate('buildings')
