@@ -12,13 +12,13 @@ const AccountSchema = new Schema({
         type: String, 
         unique: true, 
         required: true,
-        validate: {
-            validator: function(v) {
-                // Player tag must start with # followed by 9-10 uppercase letters or digits
-                return !v || /^#[A-Z0-9]{7, 9}$/.test(v);
-            },
-            message: 'Player tag must start with # and include 9-10 characters after it (e.g., #ABC12DEF3)'
-        }
+        // validate: {
+        //     validator: function(v) {
+        //         // Player tag must start with # followed by 9-10 uppercase letters or digits
+        //         return !v || /^#[A-Z0-9]{7, 9}$/.test(v);
+        //     },
+        //     message: 'Player tag must start with # and include 9-10 characters after it (e.g., #ABC12DEF3)'
+        // }
     },
     townHallLevel: { 
         type: Number, 
