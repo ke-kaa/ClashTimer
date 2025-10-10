@@ -50,6 +50,10 @@ const {
     SMTP_USER,
     SMTP_PASS,
     EMAIL_FROM,
+    CLASH_EMAIL,
+    CLASH_PASSWORD,
+    CLASH_API_KEY,
+    CLASH_API_KEYNAME,
 } = process.env;
 
 export const config = {
@@ -82,6 +86,13 @@ export const config = {
         from: EMAIL_FROM,
         enabled: Boolean(SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS),
     },
+
+    clash: {
+        email: CLASH_EMAIL,
+        password: CLASH_PASSWORD,
+        api: CLASH_API_KEY,
+        keyName: CLASH_API_KEYNAME
+    }
 };
 
 

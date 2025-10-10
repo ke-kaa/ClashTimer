@@ -1,4 +1,18 @@
-import { getAccountsForDashboardService, getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
+import { addVillageDetailService, getVillageService, getAccountsForDashboardService, getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
+
+
+export async function getVillageController(req, res) {
+    try {
+        const { playerTag } = req.params;
+        const playerData = await getVillageService(playerTag)
+        
+        return res.json(playerData);
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message || 'Coud not fetch player data.'
+        })
+    }
+}
 
 export async function getAccounts(req, res) {
     try {
@@ -9,6 +23,23 @@ export async function getAccounts(req, res) {
         return res.json(accounts);
     } catch (error) {
         return res.status(500).json({ error: error.message });
+    }
+}
+
+export async function addVillageDetailController(req, res) {
+    try {
+        const userId = req.user?.id || req.user?._id;
+        const { cacheKey } = req.body;
+        console.log(cacheKey)
+        if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+        let account = await addVillageDetailService({ userId, cacheKey });
+
+        return res.status(201).json(account);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({ error: error.message });
     }
 }
 
