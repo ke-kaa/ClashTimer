@@ -9,7 +9,63 @@ import Spell from "../models/Spell.js";
 import Troop from "../models/Troop.js";
 import WallGroup from "../models/WallGroup.js";
 import { createWallGroupForTownHall } from "./wallService.js";
+import getPlayer  from "./external/cocAPI.js";
+import NodeCache from 'node-cache';
+import { randomUUID } from "crypto";
+import createHttpError from 'http-errors';
 
+const myCache = new NodeCache({ stdTTL: 120, checkperiod: 120 });
+
+export async function getVillageService(playerTag) {
+    const playerData = await getPlayer(playerTag);
+
+    if (!playerData) {
+        throw createHttpError(404, 'No player data found from clash of clans.');
+    }
+
+    const {
+        name,
+        tag,
+        townHallLevel,
+        warStars,
+        expLevel
+    } = playerData;
+
+    const cacheKey = randomUUID();
+
+    const villageData = {
+        "summary": { name, tag, townHallLevel, warStars, expLevel },
+        "cacheKey": cacheKey
+    }
+
+    const success = myCache.set(cacheKey, playerData, 3000 );
+    console.log("saved succuss: ", success);
+
+    return villageData;
+};
+
+export async function addVillageDetailService({userId, cacheKey}){
+    const playerData = myCache.get(cacheKey);
+    const datas = myCache.keys();
+    console.log("cached datas: ", datas);
+
+    if (!playerData) {
+        throw createHttpError(410, 'No cached village data. Please search again.');
+    }
+
+    const {
+        name,
+        tag,
+        townHallLevel,
+        clan
+    } = playerData;
+
+    
+    const clanTag = clan?.tag || null;
+
+    const account = createAccountFromClashAPIService({userId, username: name, playerTag: tag, townHallLevel, clanTag, playerData });
+    return account;
+}
 
 export async function getAccountsService({ userId, clanTag, townHallLevel, playerTag, sortBy }) {
     let query = { owner: userId };
@@ -199,6 +255,168 @@ export async function createAccountService({ userId, username, playerTag, townHa
                 });
                 await troop.save({ session });
                 troopIds.push(troop._id);
+            }
+
+            account.buildings = buildingIds;
+            account.heroes = heroIds;
+            account.pets = petIds;
+            account.siege = siegeIds;
+            account.spells = spellIds;
+            account.troops = troopIds;
+
+            const wallGroup = await createWallGroupForTownHall({ accountId: account._id, townHallLevel }, { session });
+            if (wallGroup) {
+                account.walls = wallGroup._id;
+            }
+
+            await account.save({ session });
+            createdAccount = account;
+        });
+
+        if (!createdAccount) {
+            throw new Error('Account creation failed to commit.');
+        }
+        return createdAccount;
+    } finally {
+        await session.endSession();
+    }
+}
+
+export async function createAccountFromClashAPIService({ userId, username, playerTag, townHallLevel, clanTag, preferences, playerData }) {
+    const session = await mongoose.startSession();
+    try {
+        let createdAccount = null;
+        await session.withTransaction(async () => {
+            if (playerTag) {
+                const existingAccount = await Account.findOne({ playerTag }).session(session);
+                if (existingAccount) {
+                    const err = new Error('Player tag already exists.');
+                    err.status = 404;
+                    throw err;
+                }
+            }
+
+            const thData = playerData;
+            if (!thData) {
+                const err = new Error('Invalid Town Hall level configuration');
+                err.status = 400;
+                throw err;
+            }
+
+            const account = new Account({
+                owner: userId,
+                username,
+                playerTag: playerTag || null,
+                townHallLevel,
+                clanTag: clanTag || null,
+                lastActive: new Date(),
+                totalUpgrades: 0,
+                preferences: {
+                    notifications: preferences?.notifications ?? true,
+                    theme: preferences?.theme ?? 'light',
+                    language: preferences?.language ?? 'en'
+                },
+                walls: null
+            });
+
+            const buildingIds = [];
+            const heroIds = [];
+            const troopIds = [];
+            const petIds = [];
+            const siegeIds = [];
+            const spellIds = [];
+
+            for (const trp of playerData.troops ?? []){
+                switch (trp.unlockBuilding) {
+                    case 'Barracks':
+                    case 'Dark Barracks':
+                        const trop = new Troop({
+                            name: trp.name,
+                            troopType: trp.type || 'Elixir',
+                            currentLevel: 0,
+                            maxLevel: trp.maxLevel,
+                            status: 'Idle',
+                            account: account._id
+                        });
+                        await trop.save({ session });
+                        troopIds.push(trop._id);
+                        break;
+                    case 'Workshop':
+                        const sge = new Siege({
+                            name: trp.name,
+                            siegeType: trp.type || trp.unlockResource,
+                            currentLevel: 0,
+                            maxLevel: trp.maxLevel,
+                            status: 'Idle',
+                            account: account._id
+                        });
+                        await sge.save({ session });
+                        siegeIds.push(sge._id);
+                    default:
+                        break;
+                }
+            }
+
+            for (const b of thData.buildings ?? []) {
+                for (let i = 0; i < (b.count ?? 0); i++) {
+                    const building = new Building({
+                        name: b.name,
+                        buildingType: b.type || 'Special',
+                        currentLevel: 0,
+                        maxLevel: b.maxLevel,
+                        status: 'Idle',
+                        account: account._id
+                    });
+                    await building.save({ session });
+                    buildingIds.push(building._id);
+                }
+            }
+
+            for (const h of thData.heroes ?? []) {
+                switch (h.village) {
+                    case 'home':
+                        const hero = new Hero({
+                            name: h.name,
+                            heroType: h.unlockResource || h.upgradeResource || h.name,
+                            currentLevel: 0,
+                            maxLevel: h.maxLevel,
+                            status: 'Idle',
+                            account: account._id
+                        });
+                        await hero.save({ session });
+                        heroIds.push(hero._id);
+                        break;
+                
+                    default:
+                        break;
+                }
+                
+            }
+
+            for (const p of thData.pets ?? []) {
+                const pet = new Pet({
+                    name: p.name,
+                    petType: p.name,
+                    currentLevel: 0,
+                    maxLevel: p.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await pet.save({ session });
+                petIds.push(pet._id);
+            }
+
+            for (const s of thData.spells ?? []) {
+                const spell = new Spell({
+                    name: s.name,
+                    spellType: s.type || 'Elixir',
+                    currentLevel: 0,
+                    maxLevel: s.maxLevel,
+                    status: 'Idle',
+                    account: account._id
+                });
+                await spell.save({ session });
+                spellIds.push(spell._id);
             }
 
             account.buildings = buildingIds;
