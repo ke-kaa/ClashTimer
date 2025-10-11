@@ -27,7 +27,8 @@ export function optionalAuth(req, res, next) {
 
 export function requireAuth(req, res, next) {
 	const token = getTokenFromRequest(req);
-	if (!token) return res.status(401).json({ error: 'Authentication required' });
+	if (!token) {
+		return res.status(401).json({ error: 'Authentication required' });}
 	try {
 		const decoded = verifyAccessToken(token);
 		req.user = { id: decoded.sub, role: decoded.role };
