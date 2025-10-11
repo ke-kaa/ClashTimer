@@ -11,13 +11,22 @@ import {
     getAccountsByClan,
     updateAccountPreferences,
     getAccountByPlayerTag,
-    searchAccounts
+    searchAccounts,
+    getAccountsForDashboardController,
+    getVillageController,
+    addVillageDetailController
 } from '../controllers/accountController.js';
 
 const router = Router();
 
 // GET /api/accounts -----------
 router.get('/', requireAuth, getAccounts); 
+
+router.get('/dashboard/addVillage/:playerTag', requireAuth, getVillageController); 
+
+router.post('/dashboard/addVillage/add', requireAuth, addVillageDetailController ); 
+
+router.get('/dashboard', requireAuth, getAccountsForDashboardController); 
 
 // POST /api/accounts ------------
 router.post('/', requireAuth, createAccount);
