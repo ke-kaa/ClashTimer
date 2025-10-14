@@ -18,7 +18,7 @@ try {
 const app = express();
 
 // Middleware
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(helmet({ crossOriginResourcePolicy: { porelicy: "cross-origin" } }));
 
 const corsOptions = config.corsOrigin === '*'
     ? { origin: '*' }

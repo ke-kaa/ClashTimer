@@ -3,6 +3,8 @@ import http from 'http';
 import mongoose from 'mongoose';
 import app from './app.js';
 import { config } from './config/config.js';
+import {initClashClient} from './services/external/cocClient.js'
+
 
 let server;
 
@@ -18,7 +20,7 @@ async function connectDatabase() {
 async function start() {
     try {
         await connectDatabase();
-
+        await initClashClient();
         server = http.createServer(app);
         server.listen(config.port, () => {
             console.log(`[Server] Listening on port ${config.port} (${config.env})`);
