@@ -11,9 +11,30 @@ import TH10 from '../../assets/VillageCard/TH10.png'
 import TH11 from '../../assets/VillageCard/TH11.png'
 import TH16 from '../../assets/VillageCard/TH16.png'
 import NavBar from '../../components/NavBar/NavBar';
+import { getAccountsForDashboard } from '../../services/accountServices';
+import { useEffect } from 'react';
+import VillageCardTwo from '../../components/VillageCards/TownhallTwo';
 
 export default function Dashboard() {
+    const [accounts, setAccounts] = useState([]);
     const [isAddCardOpen, setIsAddCardOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+
+    useEffect(() => {
+        async function fetchAccounts() {
+            try {
+                const data = await getAccountsForDashboard();
+                setAccounts(data);
+            } catch (error) {
+                setError(error.message || 'Failed to load accounts');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchAccounts();
+    }, []);
 
     const stats = [
         { title: 'Villages Linked', value: 3 },
@@ -49,7 +70,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className='mt-10 mx-30 px-10 flex justify-between items-center'>
+            <div className='mt-10 w-[1214px] mx-auto px-10 flex justify-between items-center'>
                 <p >Your Villages are displayed below. Click the 'Add New Village' button to add another.</p>
                 <div className="flex items-center gap-4">
                     <CustomDropdown />
@@ -79,9 +100,22 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* <div>
-                <VillageCard title={'Kaku'} playerTag={'#L80J80V9G'} townhallLevel={16} townhallIcon={TH16} />
-            </div> */}
+            {
+                accounts.map((e) => {
+                    <VillageCard title={e.username} playerTag={e.playerTag} townhallLevel={e.townhallLevel} townhallIcon={TH16} />
+                })
+            }
+            <div className='mt-10 flex flex-col gap-10'>
+                {accounts.map((e) => (
+                    <VillageCardTwo
+                        key={e._id || e.playerTag}
+                        name={e.username}
+                        playerTag={e.playerTag}
+                        townhallLevel={e.townHallLevel}
+                        // townhallIcon={TH16}
+                    />
+                ))}
+            </div>
         </div>
     )
 }
