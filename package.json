@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@fontsource/bangers": "^5.2.8",
+    "express-validator": "^7.2.1"
+  }
+}
