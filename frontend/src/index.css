@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import "@fontsource/bangers";
+
+
+/* * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+} */
+
+body {
+    font-family: "Poppins", sans-serif;
+}
+
+:root {
+    font-family: 'Poppins', sans-serif !important;
+}
