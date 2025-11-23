@@ -33,3 +33,15 @@ export const addVillage = async function ({ cacheKey }) {
         throw error.response?.data || { message: 'Unknown error occurred.' };
     }
 }
+
+export const getVillageForDetailPage = async function (playerTag) {
+    try {
+        const normalizedTag = playerTag.startsWith('#') ? playerTag : `#${playerTag}`;
+        const response = await apiClient.get(
+            `/accounts/${encodeURIComponent(normalizedTag)}`
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: 'Unknown error occurred.' };
+    }
+}
