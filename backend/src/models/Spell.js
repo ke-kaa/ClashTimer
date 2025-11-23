@@ -4,7 +4,7 @@ const SpellSchema = new Schema({
     name: { type: String, required: true },
     spellType: { 
         type: String, 
-        enum: ['Elixir', 'Dark Elixir', 'Siege Machine'],
+        enum: ['Elixir', 'Dark Elixir'],
         required: true 
     },
     currentLevel: { 
