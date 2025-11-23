@@ -136,7 +136,7 @@ export default function Dashboard() {
     ));
 
     return (
-        <div className='min-h-screen bg-[#0c1220]'>
+        <div className='min-h-screen flex flex-col bg-[#0c1220]'>
             <NavBar />
             <p className='font-extrabold text-2xl bg-gradient-to-b from-[#a0e1fd] to-white bg-clip-text text-transparent ml-30 py-10'>Villages Overview</p>
 
@@ -183,8 +183,10 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
-            <div className='mt-10 flex flex-col gap-10 pb-10'>
-                {renderVillageSection()}
+            <div className='flex-1 flex flex-col mt-10 pb-10'>
+                <div className='flex flex-col gap-10 flex-1'>
+                    {renderVillageSection()}
+                </div>
 
                 <hr className="border-t border-[#a0e1fd]/40" />
             </div>
