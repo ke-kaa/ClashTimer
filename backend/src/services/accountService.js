@@ -13,6 +13,10 @@ import getPlayer  from "./external/cocAPI.js";
 import NodeCache from 'node-cache';
 import { randomUUID } from "crypto";
 import createHttpError from 'http-errors';
+import fs from 'fs/promises';
+import path from 'path';
+
+const filePath = path.resolve(process.cwd(), 'data.json');
 
 const myCache = new NodeCache({ stdTTL: 120, checkperiod: 120 });
 
@@ -329,29 +333,67 @@ export async function createAccountFromClashAPIService({ userId, username, playe
             for (const trp of playerData.troops ?? []){
                 switch (trp.unlockBuilding) {
                     case 'Barracks':
+                        if (!trp.originalName){
+                            const elixirTroop = new Troop({
+                                name: trp.name,
+                                troopType: 'Elixir',
+                                currentLevel: trp.level,
+                                maxLevel: trp.maxLevel,
+                                status: 'Idle',
+                                account: account._id,
+                                upgradeCost: trp.upgradeCost,
+                                upgradeTime: trp.upgradeTime,
+                                housingSpace: trp.housingSpace
+                            });
+                            await elixirTroop.save({ session });
+                            troopIds.push(elixirTroop._id);
+                        }
+                        break;
                     case 'Dark Barracks':
-                        const trop = new Troop({
-                            name: trp.name,
-                            troopType: trp.type || 'Elixir',
-                            currentLevel: 0,
-                            maxLevel: trp.maxLevel,
-                            status: 'Idle',
-                            account: account._id
-                        });
-                        await trop.save({ session });
-                        troopIds.push(trop._id);
+                        if (!trp.originalName){
+                            const darkElixirTroop = new Troop({
+                                name: trp.name,
+                                troopType: 'Dark Elixir',
+                                currentLevel: trp.level,
+                                maxLevel: trp.maxLevel,
+                                status: 'Idle',
+                                account: account._id,
+                                upgradeCost: trp.upgradeCost,
+                                upgradeTime: trp.upgradeTime,
+                                housingSpace: trp.housingSpace
+                            });
+                            await darkElixirTroop.save({ session });
+                            troopIds.push(darkElixirTroop._id);
+                        }
                         break;
                     case 'Workshop':
                         const sge = new Siege({
                             name: trp.name,
-                            siegeType: trp.type || trp.unlockResource,
-                            currentLevel: 0,
+                            siegeType: trp.upgradeResource,
+                            currentLevel: trp.level,
                             maxLevel: trp.maxLevel,
                             status: 'Idle',
-                            account: account._id
+                            account: account._id,
+                            upgradeCost: trp.upgradeCost,
+                            upgradeTime: trp.upgradeTime,
+                            housingSpace: trp.housingSpace
                         });
                         await sge.save({ session });
                         siegeIds.push(sge._id);
+                        break;
+                    case 'Pet House':
+                        const pet = new Pet({
+                            name: trp.name,
+                            petType: trp.name,
+                            currentLevel: trp.level,
+                            maxLevel: trp.maxLevel,
+                            status: 'Idle',
+                            account: account._id,
+                            upgradeCost: trp.upgradeCost,
+                            upgradeTime: trp.upgradeTime,
+                        });
+                        await pet.save({ session });
+                        petIds.push(pet._id);
                     default:
                         break;
                 }
@@ -378,42 +420,33 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                         const hero = new Hero({
                             name: h.name,
                             heroType: h.unlockResource || h.upgradeResource || h.name,
-                            currentLevel: 0,
+                            currentLevel: h.level,
                             maxLevel: h.maxLevel,
                             status: 'Idle',
-                            account: account._id
+                            account: account._id,
+                            upgradeCost: h.upgradeCost,
+                            upgradeTime: h.upgradeTime,
                         });
                         await hero.save({ session });
                         heroIds.push(hero._id);
                         break;
-                
                     default:
                         break;
                 }
                 
             }
 
-            for (const p of thData.pets ?? []) {
-                const pet = new Pet({
-                    name: p.name,
-                    petType: p.name,
-                    currentLevel: 0,
-                    maxLevel: p.maxLevel,
-                    status: 'Idle',
-                    account: account._id
-                });
-                await pet.save({ session });
-                petIds.push(pet._id);
-            }
-
             for (const s of thData.spells ?? []) {
                 const spell = new Spell({
                     name: s.name,
                     spellType: s.type || 'Elixir',
-                    currentLevel: 0,
+                    currentLevel: s.level,
                     maxLevel: s.maxLevel,
                     status: 'Idle',
-                    account: account._id
+                    account: account._id,
+                    upgradeTime: s.upgradeTime, 
+                    upgradeCost: s.upgradeCost,
+                    housingSpace: s.housingSpace,
                 });
                 await spell.save({ session });
                 spellIds.push(spell._id);
@@ -692,11 +725,19 @@ export async function getAccountByPlayerTagService(userId, playerTag) {
         .populate('siege')
         .populate('spells')
         .populate('troops')
+        .populate('walls')
 
     if (!account) throw { status: 404, message: 'Account not found' };
 
     account.lastActive = new Date();
     await account.save();
+
+    try {
+        const serializedAccount = account.toObject({ virtuals: true });
+        await fs.writeFile(filePath, JSON.stringify(serializedAccount, null, 2), 'utf-8');
+    } catch (writeError) {
+        console.error('Failed to persist account detail snapshot', writeError);
+    }
 
     return account;
 }

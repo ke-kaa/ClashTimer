@@ -34,8 +34,8 @@ router.post('/', requireAuth, createAccount);
 // GET /api/accounts/search?q=term -----------
 router.get('/search', requireAuth, searchAccounts);
 
-// GET /api/accounts/playerTag/:playerTag ----------
-router.get('/playerTag/:playerTag', requireAuth, getAccountByPlayerTag);
+// GET /api/accounts/:playerTag ----------
+router.get('/:playerTag', requireAuth, getAccountByPlayerTag);
 
 // GET /api/accounts/:id ------------
 router.get('/:id', requireAuth, ensureAccountAccessFromParam('id'), getAccountDetail);
