@@ -26,7 +26,7 @@ export default function AppRoutes() {
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/reorder-villages" element={<ReorderVillages />} />
-            <Route path="/village/:villageId" element={<VillageDetailPage />} />
+            <Route path="/village/:playerTag" element={<VillageDetailPage />} />
         </Routes>
     )
 }
