@@ -1,19 +1,49 @@
 import './Dashboard.css'
 import React, { useState } from 'react' // Import useState
+import { Link } from 'react-router-dom';
 import StatCard from '../../components/Dashboard/StatCard/StatCard';
 import CustomDropdown from '../../components/UI/CustomDropdown/CustomDropdown';
 import AddVillageCard from '../../components/AddVillageCard/AddVillageCard'; 
 import VillageCard from '../../components/Dashboard/VillageCard/VillageCard';
-import TH2 from '../../assets/VillageCard/TH2.png'
-import TH5 from '../../assets/VillageCard/TH5.png'
-import TH6 from '../../assets/VillageCard/TH6.png'
-import TH10 from '../../assets/VillageCard/TH10.png'
-import TH11 from '../../assets/VillageCard/TH11.png'
 import TH16 from '../../assets/VillageCard/TH16.png'
 import NavBar from '../../components/NavBar/NavBar';
 import { getAccountsForDashboard } from '../../services/accountServices';
 import { useEffect } from 'react';
-import VillageCardTwo from '../../components/VillageCards/TownhallTwo';
+import Townhall2 from '../../components/VillageCards/Townhall2';
+import Townhall3 from '../../components/VillageCards/Townhall3';
+import Townhall4 from '../../components/VillageCards/Townhall4';
+import Townhall5 from '../../components/VillageCards/Townhall5';
+import Townhall6 from '../../components/VillageCards/Townhall6';
+import Townhall7 from '../../components/VillageCards/Townhall7';
+import Townhall8 from '../../components/VillageCards/Townhall8';
+import Townhall9 from '../../components/VillageCards/Townhall9';
+import Townhall10 from '../../components/VillageCards/Townhall10';
+import Townhall11 from '../../components/VillageCards/Townhall11';
+import Townhall12 from '../../components/VillageCards/Townhall12';
+import Townhall13 from '../../components/VillageCards/Townhall13';
+import Townhall14 from '../../components/VillageCards/Townhall14';
+import Townhall15 from '../../components/VillageCards/Townhall15';
+import Townhall16 from '../../components/VillageCards/Townhall16';
+import Townhall17 from '../../components/VillageCards/Townhall17';
+
+const TOWNHALL_CARD_COMPONENTS = {
+    2: Townhall2,
+    3: Townhall3,
+    4: Townhall4,
+    5: Townhall5,
+    6: Townhall6,
+    7: Townhall7,
+    8: Townhall8,
+    9: Townhall9,
+    10: Townhall10,
+    11: Townhall11,
+    12: Townhall12,
+    13: Townhall13,
+    14: Townhall14,
+    15: Townhall15,
+    16: Townhall16,
+    17: Townhall17,
+};
 
 export default function Dashboard() {
     const [accounts, setAccounts] = useState([]);
@@ -35,6 +65,60 @@ export default function Dashboard() {
         }
         fetchAccounts();
     }, []);
+
+    const renderAccountCard = (account, index) => {
+        const level = Number(account?.townHallLevel ?? account?.townhallLevel ?? account?.townhall);
+        const CardComponent = TOWNHALL_CARD_COMPONENTS[level];
+        const key = account?._id || account?.playerTag || `account-${index}`;
+        const name = account?.username || account?.name || 'Unnamed Village';
+        const sanitizedTag = account?.playerTag?.replace(/^#/, '');
+        const detailPath = sanitizedTag ? `/village/${encodeURIComponent(sanitizedTag)}` : null;
+
+        const cardNode = CardComponent ? (
+            <CardComponent
+                name={name}
+                playerTag={account?.playerTag}
+                townhallLevel={level}
+            />
+        ) : (
+            <VillageCard
+                name={name}
+                playerTag={account?.playerTag}
+                townhallLevel={level}
+                townhallIcon={TH16}
+            />
+        );
+
+        if (detailPath) {
+            return (
+                <Link
+                    key={key}
+                    to={detailPath}
+                    className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a0e1fd] rounded-[18px]"
+                >
+                    {cardNode}
+                </Link>
+            );
+        }
+
+        return React.cloneElement(cardNode, { key });
+    };
+
+    const renderVillageSection = () => {
+        if (loading) {
+            return <p className="text-center text-white">Loading villages…</p>;
+        }
+
+        if (error) {
+            return <p className="text-center text-red-400">{error}</p>;
+        }
+
+        if (!accounts.length) {
+            return <p className="text-center text-white/70">No villages linked yet.</p>;
+        }
+
+        return accounts.map(renderAccountCard);
+    };
 
     const stats = [
         { title: 'Villages Linked', value: 3 },
@@ -99,22 +183,10 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
+            <div className='mt-10 flex flex-col gap-10 pb-10'>
+                {renderVillageSection()}
 
-            {
-                accounts.map((e) => {
-                    <VillageCard title={e.username} playerTag={e.playerTag} townhallLevel={e.townhallLevel} townhallIcon={TH16} />
-                })
-            }
-            <div className='mt-10 flex flex-col gap-10'>
-                {accounts.map((e) => (
-                    <VillageCardTwo
-                        key={e._id || e.playerTag}
-                        name={e.username}
-                        playerTag={e.playerTag}
-                        townhallLevel={e.townHallLevel}
-                        // townhallIcon={TH16}
-                    />
-                ))}
+                <hr className="border-t border-[#a0e1fd]/40" />
             </div>
         </div>
     )
