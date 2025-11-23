@@ -6,7 +6,7 @@ import petIcon from '../../assets/VillageCard/petIcon.png'
 import bowler from '../../assets/VillageCard/TH10/bowler.png'
 import miner from '../../assets/VillageCard/TH10/miner.png'
 
-export default function Townhall9({ name, playerTag  }) {
+export default function Townhall10({ name, playerTag  }) {
     const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#8B3332]`;
 
     
@@ -68,7 +68,7 @@ export default function Townhall9({ name, playerTag  }) {
                     </div>
                     {playerTag && <div className="text-[12px] text-white italic mt-1">{playerTag}</div>}
                     </div>
-                    <p className="text-sm text-white ml-2">Townhall level: 3</p>
+                    <p className="text-sm text-white ml-2">Townhall level: 10</p>
                 </div>
             </div>
 

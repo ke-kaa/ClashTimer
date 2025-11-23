@@ -70,7 +70,7 @@ export default function Townhall9({ name, playerTag  }) {
                     </div>
                     {playerTag && <div className="text-[12px] text-white italic mt-1">{playerTag}</div>}
                     </div>
-                    <p className="text-sm text-white ml-2">Townhall level: 3</p>
+                    <p className="text-sm text-white ml-2">Townhall level: 9</p>
                 </div>
             </div>
 

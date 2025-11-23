@@ -7,7 +7,7 @@ import electroDragon from '../../assets/VillageCard/TH11/electroDragon.png'
 import grandWarden from '../../assets/VillageCard/TH11/grandWarden.png'
 import iceGolem from '../../assets/VillageCard/TH11/iceGolem.png'
 
-export default function Townhall9({ name, playerTag  }) {
+export default function Townhall11({ name, playerTag  }) {
     const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#B8B1AA]`;
 
     
@@ -63,7 +63,7 @@ export default function Townhall9({ name, playerTag  }) {
                     </div>
                     {playerTag && <div className="text-[12px] text-white italic mt-1">{playerTag}</div>}
                     </div>
-                    <p className="text-sm text-white ml-2">Townhall level: 3</p>
+                    <p className="text-sm text-white ml-2">Townhall level: 11</p>
                 </div>
             </div>
 

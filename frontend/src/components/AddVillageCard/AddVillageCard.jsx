@@ -2,6 +2,10 @@ import React, { useState } from 'react'
 import './addVillageCard.css'
 import hashTag from '../../assets/AddVillageCard/hashTag.png'
 import { getVillage, addVillage } from '../../services/accountServices'
+const TOWN_HALL_ICONS = import.meta.glob(
+  '../../assets/TownhallIcons/TH*.png',
+  { eager: true, import: 'default' }
+);
 
 export default function AddVillageCard() {
   const [query, setQuery] = useState('')
@@ -55,11 +59,19 @@ export default function AddVillageCard() {
     }
   }
 
+    const resolveTownHallIcon = (level) => {
+    const normalized = Number(level) || 0;
+    const key = `../../assets/TownhallIcons/TH${normalized}.png`;
+    return TOWN_HALL_ICONS[key]
+  };
+
   const name = playerData?.summary?.name ?? 'Unknown';
   const playerTag = playerData?.summary?.tag ?? '-';
   const townhallLevel = playerData?.summary?.townHallLevel ?? '-';
   const xp = playerData?.summary?.expLevel ?? '-';
   const warStars = playerData?.summary?.warStars ?? '-';
+
+  const townhallImage = resolveTownHallIcon(townhallLevel);
 
   return (
     <div className="w-[420px] p-6 rounded-[14px] add-village-outer">
@@ -108,13 +120,12 @@ export default function AddVillageCard() {
         <div className="border-b border-[#22333b] my-3" />
 
         <div className="flex items-center gap-4 p-5">
-          <div className="w-16 h-16 rounded-lg bg-gradient-to-b from-[#18202b] to-[#0b1216] flex items-center justify-center">
-            {/* townhall image or placeholder
+          <div className="w-16 h-16 rounded-lg flex items-center justify-center">
             {townhallImage ? (
               <img src={townhallImage} alt={`th-${townhallLevel}`} className="w-[80px] h-[80px] object-contain" />
             ) : (
               <div className="w-12 h-12 bg-[#0c1620] rounded" />
-            )} */}
+            )}
           </div>
 
           <div className="flex-1">

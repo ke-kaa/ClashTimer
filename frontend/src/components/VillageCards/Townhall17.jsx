@@ -1,40 +1,29 @@
 import React from 'react'
-import TH5 from '../../assets/TownHallIcons/TH5.png';
+import TH17 from '../../assets/TownHallIcons/TH17.png';
 import hammerIcon from '../../assets/VillageCard/hammerIcon.png'
 import laboratoryIcon from '../../assets/VillageCard/laboratoryIcon.png'
 import petIcon from '../../assets/VillageCard/petIcon.png'
-import wizard1 from '../../assets/VillageCard/TH5/wizard1.png'
-import wizard2 from '../../assets/VillageCard/TH5/wizard2.png'
+import sneezy from '../../assets/VillageCard/TH17/sneezy.png'
 
-export default function Townhall4({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#D68029]`;
+export default function Townhall17({ name, playerTag  }) {
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#547B6F]`;
 
     
     const backgroundDecor = [
         {
-            src: wizard1,
-            width: 73,
-            height: 73,
-            style: { top: '99px', left: '500px', opacity: 1 },
+            src: sneezy,
+            width: 70,
+            height: 63,
+            style: { top: '50px', left: '300px', opacity: 0.8, transform: '' },
         },
-        {
-            src: wizard2,
-            width: 73,
-            height: 73,
-            style: { top: '99px', left: '580px', opacity: 1 },
-        },
+        
     ];
 
     return (
         <div className={rootClasses} >
             <div className="absolute inset-0 pointer-events-none z-10">
                 {backgroundDecor.map((decor, index) => (
-                <img
-                    key={decor.src + index}
-                    src={decor.src}
-                    alt="village accent"
-                    width={decor.width}
-                    height={decor.height}
+                <img key={decor.src + index} src={decor.src} alt="village accent" width={decor.width} height={decor.height}
                     style={{
                     position: 'absolute',
                     ...decor.style,
@@ -45,7 +34,7 @@ export default function Townhall4({ name, playerTag  }) {
             </div>
 
             <div className="flex items-center gap-4 z-20 h-full pl-4">
-                <img src={TH5} alt="townhall" className="w-[70px] h-[64px] object-contain" />
+                <img src={TH17} alt="townhall" className="w-[70px] h-[64px] object-contain" />
                 
                 <div className='flex flex-col gap-5'>
                     <div>
@@ -56,7 +45,7 @@ export default function Townhall4({ name, playerTag  }) {
                     </div>
                     {playerTag && <div className="text-[12px] text-white italic mt-1">{playerTag}</div>}
                     </div>
-                    <p className="text-sm text-white ml-2">Townhall level: 5</p>
+                    <p className="text-sm text-white ml-2">Townhall level: 17</p>
                 </div>
             </div>
 

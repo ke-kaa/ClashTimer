@@ -1,27 +1,48 @@
 import React from 'react'
-import TH5 from '../../assets/TownHallIcons/TH5.png';
+import TH12 from '../../assets/TownHallIcons/TH12.png';
 import hammerIcon from '../../assets/VillageCard/hammerIcon.png'
 import laboratoryIcon from '../../assets/VillageCard/laboratoryIcon.png'
 import petIcon from '../../assets/VillageCard/petIcon.png'
-import wizard1 from '../../assets/VillageCard/TH5/wizard1.png'
-import wizard2 from '../../assets/VillageCard/TH5/wizard2.png'
+import battleBlimp from '../../assets/VillageCard/TH12/battleBlimp.png'
+import headhunter from '../../assets/VillageCard/TH12/headhunter.png'
+import stoneSlammer from '../../assets/VillageCard/TH12/stoneSlammer.png'
+import wallWrecker from '../../assets/VillageCard/TH12/wallWrecker.png'
+import yeti from '../../assets/VillageCard/TH12/yeti.png'
 
-export default function Townhall4({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#D68029]`;
+export default function Townhall12({ name, playerTag  }) {
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#43AEF4]`;
 
     
     const backgroundDecor = [
         {
-            src: wizard1,
-            width: 73,
-            height: 73,
-            style: { top: '99px', left: '500px', opacity: 1 },
+            src: yeti,
+            width: 100,
+            height: 100,
+            style: { top: '76px', left: '350px', opacity: 1 },
         },
         {
-            src: wizard2,
-            width: 73,
-            height: 73,
-            style: { top: '99px', left: '580px', opacity: 1 },
+            src: headhunter,
+            width: 53,
+            height: 53,
+            style: { top: '115px', left: '450px', opacity: 1, transform: '' },
+        },
+        {
+            src: battleBlimp,
+            width: 80,
+            height: 80,
+            style: { top: '10px', left: '700px', opacity: 1, transform: 'scaleX(-1)' },
+        },
+        {
+            src: wallWrecker,
+            width: 80,
+            height: 80,
+            style: { top: '88px', left: '700px', opacity: 1, transform: '' },
+        },
+        {
+            src: stoneSlammer,
+            width: 77,
+            height: 7,
+            style: { top: '10px', left: '790px', opacity: 1, transform: '' },
         },
     ];
 
@@ -29,12 +50,7 @@ export default function Townhall4({ name, playerTag  }) {
         <div className={rootClasses} >
             <div className="absolute inset-0 pointer-events-none z-10">
                 {backgroundDecor.map((decor, index) => (
-                <img
-                    key={decor.src + index}
-                    src={decor.src}
-                    alt="village accent"
-                    width={decor.width}
-                    height={decor.height}
+                <img key={decor.src + index} src={decor.src} alt="village accent" width={decor.width} height={decor.height}
                     style={{
                     position: 'absolute',
                     ...decor.style,
@@ -45,7 +61,7 @@ export default function Townhall4({ name, playerTag  }) {
             </div>
 
             <div className="flex items-center gap-4 z-20 h-full pl-4">
-                <img src={TH5} alt="townhall" className="w-[70px] h-[64px] object-contain" />
+                <img src={TH12} alt="townhall" className="w-[70px] h-[64px] object-contain" />
                 
                 <div className='flex flex-col gap-5'>
                     <div>
@@ -56,7 +72,7 @@ export default function Townhall4({ name, playerTag  }) {
                     </div>
                     {playerTag && <div className="text-[12px] text-white italic mt-1">{playerTag}</div>}
                     </div>
-                    <p className="text-sm text-white ml-2">Townhall level: 5</p>
+                    <p className="text-sm text-white ml-2">Townhall level: 12</p>
                 </div>
             </div>
 
