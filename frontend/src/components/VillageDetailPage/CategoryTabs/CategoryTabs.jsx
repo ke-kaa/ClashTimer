@@ -6,22 +6,27 @@ const tabs = [
     "Heroes", "Equipment", "Pets", "Walls"
 ];
 
-export default function CategoryTabs() {
+export default function CategoryTabs({ activeTab, onChange }) {
     return (
-        <div className=" overflow-x-hidden mx-auto  w-[90%] max-w-[1900px]">
-            <div className='h-[1px] bg-white w-full mb-5'></div>
-
-            <div className='flex mb-2 justify-between'>
-                {tabs.map((tab, i) => (
-                    <button
-                    key={i}
-                    className={`pb-2 border-b-2 ${
-                        i === 0 ? "border-yellow-400 text-white" : "border-transparent text-gray-400 hover:text-white"
-                    }`}
-                    >
-                    {tab}
-                    </button>
-                ))}
+        <div className="w-[90%] max-w-[1900px] mx-auto overflow-x-auto">
+            <div className="h-[1px] w-full bg-white/30 mb-5" />
+            <div className="flex min-w-max gap-6">
+                {tabs.map((tab) => {
+                    const isActive = tab === activeTab;
+                    return (
+                        <button
+                            key={tab}
+                            onClick={() => onChange(tab)}
+                            className={`pb-2 text-sm font-medium transition-colors border-b-2 ${
+                                isActive
+                                    ? "text-white border-[#F8CE63]"
+                                    : "text-gray-400 border-transparent hover:text-white"
+                            }`}
+                        >
+                            {tab}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

@@ -9,7 +9,7 @@ import minionPrince from '../../assets/VillageCard/TH9/minionPrince.png'
 import witch from '../../assets/VillageCard/TH9/witch.png'
 
 export default function Townhall9({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#40424F]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#40424F] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

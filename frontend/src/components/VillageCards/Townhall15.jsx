@@ -12,7 +12,7 @@ import poisonLizard from '../../assets/VillageCard/TH15/poisonLizard.png'
 import rootRider from '../../assets/VillageCard/TH15/rootRider.png'
 
 export default function Townhall15({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#9A83FF]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#9A83FF] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

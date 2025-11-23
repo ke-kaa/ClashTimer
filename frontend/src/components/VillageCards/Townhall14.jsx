@@ -12,7 +12,7 @@ import mightyYak from '../../assets/VillageCard/TH14/mightyYak.png'
 import unicorn from '../../assets/VillageCard/TH14/unicorn.png'
 
 export default function Townhall14({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#24AD7C]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#24AD7C] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

@@ -8,7 +8,7 @@ import grandWarden from '../../assets/VillageCard/TH11/grandWarden.png'
 import iceGolem from '../../assets/VillageCard/TH11/iceGolem.png'
 
 export default function Townhall11({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#B8B1AA]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#B8B1AA] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

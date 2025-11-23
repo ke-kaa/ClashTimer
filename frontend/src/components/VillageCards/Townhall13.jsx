@@ -10,7 +10,7 @@ import siegeBarracks from '../../assets/VillageCard/TH13/siegeBarracks.png'
 import dragonRider from '../../assets/VillageCard/TH13/dragonRider.png'
 
 export default function Townhall13({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#82C8FC]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#82C8FC] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

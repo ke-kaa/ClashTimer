@@ -9,7 +9,7 @@ import pekka from '../../assets/VillageCard/TH8/pekka.png'
 import valkyrie from '../../assets/VillageCard/TH8/valkyrie.png'
 
 export default function Townhall8({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#D68029]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#D68029] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

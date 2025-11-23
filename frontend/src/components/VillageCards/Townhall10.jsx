@@ -7,7 +7,7 @@ import bowler from '../../assets/VillageCard/TH10/bowler.png'
 import miner from '../../assets/VillageCard/TH10/miner.png'
 
 export default function Townhall10({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#8B3332]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-visible bg-transparent shadow-[0_0_10px_2px_#8B3332] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [

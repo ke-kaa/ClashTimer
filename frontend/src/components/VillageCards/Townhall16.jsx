@@ -10,7 +10,7 @@ import thrower from '../../assets/VillageCard/TH16/thrower.png'
 import troopLauncher from '../../assets/VillageCard/TH16/troopLauncher.png'
 
 export default function Townhall16({ name, playerTag  }) {
-    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#D68029]`;
+    const rootClasses = `w-[1214px] h-[165px] mx-auto rounded-[18px] p-4 relative overflow-hidden bg-transparent shadow-[0_0_10px_2px_#D68029] transition-transform duration-200 ease-in-out hover:scale-102`;
 
     
     const backgroundDecor = [
