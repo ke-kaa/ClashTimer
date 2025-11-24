@@ -10,7 +10,7 @@ export default function CategoryTabs({ activeTab, onChange }) {
     return (
         <div className="w-[90%] max-w-[1900px] mx-auto overflow-x-auto">
             <div className="h-[1px] w-full bg-white/30 mb-5" />
-            <div className="flex min-w-max gap-6">
+            <div className="flex min-w-max gap-6 justify-around">
                 {tabs.map((tab) => {
                     const isActive = tab === activeTab;
                     return (

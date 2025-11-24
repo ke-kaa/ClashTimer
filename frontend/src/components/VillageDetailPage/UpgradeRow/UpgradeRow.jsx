@@ -23,7 +23,7 @@ export default function UpgradeRow({
                     <img src={image} alt="" className="w-16 h-16" />
                 </td>
                 <td className="text-center align-middle">{currentLevel}/{maxLevel}</td>
-                <td colSpan="6" className="text-center text-green-400 font-semibold py-4">
+                <td colSpan="6" className="text-center text-green-300 font-semibold py-4">
                     Fully upgraded for this Town Hall Level
                 </td>
             </tr>

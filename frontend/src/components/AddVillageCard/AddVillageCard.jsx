@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import './addVillageCard.css'
-import hashTag from '../../assets/AddVillageCard/hashTag.png'
+import hashTag from '../../assets/AddVillageCard/hashtag.png'
 import { getVillage, addVillage } from '../../services/accountServices'
 const TOWN_HALL_ICONS = import.meta.glob(
-  '../../assets/TownhallIcons/TH*.png',
+  '../../assets/TownHallIcons/TH*.png',
   { eager: true, import: 'default' }
 );
 
@@ -61,7 +61,7 @@ export default function AddVillageCard() {
 
     const resolveTownHallIcon = (level) => {
 		const normalized = Number(level) || 0;
-		const key = `../../assets/TownhallIcons/TH${normalized}.png`;
+		const key = `../../assets/TownHallIcons/TH${normalized}.png`;
 		return TOWN_HALL_ICONS[key]
 	};
 
@@ -78,24 +78,22 @@ export default function AddVillageCard() {
 		{/* Search input */}
 		<div className="my-4 mb-8">
 			<div className="relative">
-			<form onSubmit={getVillageData} className="flex items-center gap-3 bg-[#07121a] rounded-full px-3 border border-[#21313a]">
+			<form onSubmit={getVillageData} className="flex items-center bg-[#07121a] rounded-full px-3 border border-[#21313a]">
 				
 				<span className="text-[#fff] font-semibold p-2 text-[1.25rem]">#</span>
-				<div className="w-[1px] self-stretch bg-[#21313a] rounded" />
-				<input
-				value={query}
-				onChange={(e) => setQuery(e.target.value)}
+				<div className="w-[1px] self-stretch bg-[#21313a] rounded mr-1" />
+				<input value={query} onChange={(e) => setQuery(e.target.value)}
 				placeholder="player tag"
-				className="italic bg-transparent outline-none text-white placeholder:text-[#7f8f96] flex-1"
+				className="italic bg-transparent outline-none text-white placeholder:text-[#7f8f96] flex-1 min-w-0"
 				/>
-				<button type='submit' disabled={loading} className="text-[#a0e1fd]" aria-label="search">
+				<button type='submit' disabled={loading} className="text-[#a0e1fd] flex items-center justify-center w-10 h-10 shrink-0 p-0" aria-label="search">
 				{ loading ? (<svg className="animate-spin h-5 w-5 text-[#a0e1fd]" viewBox="0 0 24 24">
 					<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
 					<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.29A7.96 7.96 0 014 12H0c0 3.04 1.13 5.82 3 7.94l3-2.65z" />
 					</svg>) : 
 					(<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M21 21l-4.35-4.35" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-					<circle cx="11" cy="11" r="6" stroke="#fff" strokeWidth="2" />
+						<path d="M21 21l-4.35-4.35" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+						<circle cx="11" cy="11" r="6" stroke="#fff" strokeWidth="2" />
 					</svg>)}
 				</button>
 			</form>
