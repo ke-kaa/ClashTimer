@@ -10,7 +10,7 @@ import { getVillageForDetailPage } from '../../services/accountServices'
 import { useEffect } from 'react'
 import { useState } from 'react'
 const TOWN_HALL_ICONS = import.meta.glob(
-    '../../assets/TownhallIcons/TH*.png',
+    '../../assets/TownHallIcons/TH*.png',
     { eager: true, import: 'default' }
 );
 
@@ -38,7 +38,7 @@ export default function VillageDetailPage() {
 
     const resolveTownHallIcon = (level) => {
 		const normalized = Number(level) || 0;
-		const key = `../../assets/TownhallIcons/TH${normalized}.png`;
+		const key = `../../assets/TownHallIcons/TH${normalized}.png`;
 		return TOWN_HALL_ICONS[key]
 	};
 
