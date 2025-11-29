@@ -11,12 +11,12 @@ const SiegeSchema = new Schema({
         type: Number, 
         required: true, 
         min: 0,
-        validate: {
-            validator: function(v) {
-                return v <= this.maxLevel;
-            },
-            message: 'Current level cannot exceed max level'
-        }
+        // validate: {
+        //     validator: function(v) {
+        //         return v <= this.maxLevel;
+        //     },
+        //     message: 'Current level cannot exceed max level'
+        // }
     },
     maxLevel: { type: Number, required: true, min: 1 },
     status: {
