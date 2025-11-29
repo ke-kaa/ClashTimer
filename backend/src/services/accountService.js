@@ -15,6 +15,7 @@ import { randomUUID } from "crypto";
 import createHttpError from 'http-errors';
 import fs from 'fs/promises';
 import path from 'path';
+import static_data from '../utils/static_data.json' with { type: "json" };
 
 const filePath = path.resolve(process.cwd(), 'data.json');
 
@@ -301,6 +302,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
             }
 
             const thData = playerData;
+            const itemsByTH = itemsByTownHall;
             if (!thData) {
                 const err = new Error('Invalid Town Hall level configuration');
                 err.status = 400;
@@ -337,14 +339,16 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                             const elixirTroop = new Troop({
                                 name: trp.name,
                                 troopType: 'Elixir',
-                                currentLevel: trp.level,
-                                maxLevel: trp.maxLevel,
+                                currentLevel: trp.level ,
+                                // itemsByTH[townHallLevel].troops.find(t => t.name === trp.name)?.maxLevel || 
+                                maxLevel: itemsByTH[townHallLevel].troops.find(t => t.name === trp.name)?.maxLevel ||  trp.maxLevel,
                                 status: 'Idle',
                                 account: account._id,
                                 upgradeCost: trp.upgradeCost,
                                 upgradeTime: trp.upgradeTime,
                                 housingSpace: trp.housingSpace
                             });
+                            console.log(elixirTroop.name, elixirTroop.currentLevel, elixirTroop.maxLevel);
                             await elixirTroop.save({ session });
                             troopIds.push(elixirTroop._id);
                         }
@@ -355,7 +359,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                                 name: trp.name,
                                 troopType: 'Dark Elixir',
                                 currentLevel: trp.level,
-                                maxLevel: trp.maxLevel,
+                                maxLevel: itemsByTH[townHallLevel].troops.find(t => t.name === trp.name)?.maxLevel || trp.maxLevel,
                                 status: 'Idle',
                                 account: account._id,
                                 upgradeCost: trp.upgradeCost,
@@ -371,7 +375,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                             name: trp.name,
                             siegeType: trp.upgradeResource,
                             currentLevel: trp.level,
-                            maxLevel: trp.maxLevel,
+                            maxLevel: itemsByTH[townHallLevel].sieges.find(t => t.name === trp.name)?.maxLevel || trp.maxLevel,
                             status: 'Idle',
                             account: account._id,
                             upgradeCost: trp.upgradeCost,
@@ -386,7 +390,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                             name: trp.name,
                             petType: trp.name,
                             currentLevel: trp.level,
-                            maxLevel: trp.maxLevel,
+                            maxLevel: itemsByTH[townHallLevel].pets.find(t => t.name === trp.name)?.maxLevel || trp.maxLevel,
                             status: 'Idle',
                             account: account._id,
                             upgradeCost: trp.upgradeCost,
@@ -421,7 +425,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                             name: h.name,
                             heroType: h.unlockResource || h.upgradeResource || h.name,
                             currentLevel: h.level,
-                            maxLevel: h.maxLevel,
+                            maxLevel: itemsByTH[townHallLevel].heroes.find(t => t.name === h.name)?.maxLevel || h.maxLevel,
                             status: 'Idle',
                             account: account._id,
                             upgradeCost: h.upgradeCost,
@@ -441,7 +445,7 @@ export async function createAccountFromClashAPIService({ userId, username, playe
                     name: s.name,
                     spellType: s.type || 'Elixir',
                     currentLevel: s.level,
-                    maxLevel: s.maxLevel,
+                    maxLevel: itemsByTH[townHallLevel].spells.find(t => t.name === s.name)?.maxLevel || s.maxLevel,
                     status: 'Idle',
                     account: account._id,
                     upgradeTime: s.upgradeTime, 
@@ -459,10 +463,10 @@ export async function createAccountFromClashAPIService({ userId, username, playe
             account.spells = spellIds;
             account.troops = troopIds;
 
-            const wallGroup = await createWallGroupForTownHall({ accountId: account._id, townHallLevel }, { session });
-            if (wallGroup) {
-                account.walls = wallGroup._id;
-            }
+            // const wallGroup = await createWallGroupForTownHall({ accountId: account._id, townHallLevel }, { session });
+            // if (wallGroup) {
+            //     account.walls = wallGroup._id;
+            // }
 
             await account.save({ session });
             createdAccount = account;
@@ -476,6 +480,69 @@ export async function createAccountFromClashAPIService({ userId, username, playe
         await session.endSession();
     }
 }
+
+export async function updateAccountDataFromPasteService(pastedData) {
+    const session = await mongoose.startSession();
+    try {
+        let updatedAccount = null;
+        await session.withTransaction(async () => {
+             
+            const account = Account.findOne({ playerTag: pastedData.tag }).session(session);
+            const buildingIds = [];
+            const wallPiecesByLevel = {};
+
+            for (const b of playerData.buildings ?? []) {
+                const id = Number(b.data ?? b._id ?? b['data'] ?? NaN);
+                const staticEntry = static_data.buildings.find(s => s._id === id);
+                const buildingName = staticEntry?.name ?? b.name ?? `Unknown (${id})`;
+                const buildingType = staticEntry?.type ?? b.type ?? 'Special';
+                const maxLevel = b.maxLevel ?? b.lvl ?? 0;
+                const count = b.cnt ?? 1;
+
+                if (id === 1000010) {
+                    wallPiecesByLevel[currentLevel] = (wallPiecesByLevel[currentLevel] || 0) + count;
+                    continue;
+                }
+
+                for (let i = 0; i < (b.count ?? 0); i++) {
+                    const building = new Building({
+                        name: buildingName,
+                        buildingType: buildingType,
+                        currentLevel: b.lvl,
+                        maxLevel: maxLevel,
+                        status: 'Idle',
+                        account: account._id
+                    });
+                    await building.save({ session });
+                    buildingIds.push(building._id);
+                }
+            }
+
+            account.buildings = buildingIds;
+            const townHallLevel = account.townHallLevel;
+
+            if (Object.keys(wallPiecesByLevel).length > 0) {
+                const levels = Object.entries(wallPiecesByLevel)
+                    .map(([lvl, cnt]) => ({ level: Number(lvl) || 1, count: cnt }))
+                    .sort((a, b) => a.level - b.level);
+                const maxLevel = levels.reduce((m, l) => Math.max(m, l.level), account.townHallLevel || 1);
+                const wallGroup = new WallGroup({ account: account._id, maxLevel, levels });
+                await wallGroup.save({ session });
+                account.walls = wallGroup._id;
+            }
+
+            await account.save({ session });
+            updatedAccount = account;
+
+
+        });
+        if (!updatedAccount) throw new Error('Account update failed to commit.');
+        return updatedAccount;
+    } finally {
+        await session.endSession();
+    }
+}
+
 
 export async function updateAccountService({ userId, id, username, playerTag, townHallLevel, clanTag, preferences }) {
     const account = await Account.findOne({ _id: id, owner: userId });
@@ -732,12 +799,12 @@ export async function getAccountByPlayerTagService(userId, playerTag) {
     account.lastActive = new Date();
     await account.save();
 
-    try {
-        const serializedAccount = account.toObject({ virtuals: true });
-        await fs.writeFile(filePath, JSON.stringify(serializedAccount, null, 2), 'utf-8');
-    } catch (writeError) {
-        console.error('Failed to persist account detail snapshot', writeError);
-    }
+    // try {
+    //     const serializedAccount = account.toObject({ virtuals: true });
+    //     await fs.writeFile(filePath, JSON.stringify(serializedAccount, null, 2), 'utf-8');
+    // } catch (writeError) {
+    //     console.error('Failed to persist account detail snapshot', writeError);
+    // }
 
     return account;
 }
