@@ -4,7 +4,7 @@ const BuildingSchema = new Schema({
     name: { type: String, required: true },
     buildingType: { 
         type: String, 
-        enum: ['Resource', 'Defense', 'Army', 'Storage', 'Wall', 'Trap', 'Special'],
+        enum: ['Resource', 'Defense', 'Army', 'Wall', 'Trap', 'Special'],
         required: true 
     },
     currentLevel: { 
