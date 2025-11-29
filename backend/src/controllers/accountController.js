@@ -1,4 +1,4 @@
-import { addVillageDetailService, getVillageService, getAccountsForDashboardService, getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
+import { updateAccountDataFromPasteService, addVillageDetailService, getVillageService, getAccountsForDashboardService, getAccountsService, getAccountDetailService, createAccountService, updateAccountService, deleteAccountService, getAccountStatsService, getAccountsByClanService, updateAccountPreferencesService, getAccountByPlayerTagService, searchAccountsService } from '../services/accountService.js'
 
 
 export async function getVillageController(req, res) {
@@ -11,6 +11,19 @@ export async function getVillageController(req, res) {
         return res.status(500).json({
             error: error.message || 'Coud not fetch player data.'
         })
+    }
+}
+
+export async function updateAccountDataFRomPasteController(req, res) {
+    try {
+        const pastedData = req.body;
+        if (!pastedData) return res.status(400).json({ error: 'Paste data is required in request body' });
+        
+        const updatedAccount = await updateAccountDataFRomPasteController(pastedData);
+        return res.json(updatedAccount);
+    } catch {
+        console.error('updateAccountDataFromPasteController error', error);
+        return res.status(error.status || 500).json({ error: error.message || 'Failed to update account from paste data' });
     }
 }
 
