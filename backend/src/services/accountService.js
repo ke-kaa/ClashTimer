@@ -482,16 +482,20 @@ export async function createAccountFromClashAPIService({ userId, username, playe
 }
 
 export async function updateAccountDataFromPasteService(pastedData) {
+    const buildingTypes = ['Army', 'Resource', 'Defense', 'Wall']
     const session = await mongoose.startSession();
     try {
         let updatedAccount = null;
         await session.withTransaction(async () => {
              
-            const account = Account.findOne({ playerTag: pastedData.tag }).session(session);
+            const account =  await Account.findOne({ playerTag: pastedData.tag }).session(session);
             const buildingIds = [];
+            const trapsIds = [];
             const wallPiecesByLevel = {};
 
-            for (const b of playerData.buildings ?? []) {
+            // console.log('is paste data recieved?', pastedData)
+
+            for (const b of pastedData.buildings ?? []) {
                 const id = Number(b.data ?? b._id ?? b['data'] ?? NaN);
                 const staticEntry = static_data.buildings.find(s => s._id === id);
                 const buildingName = staticEntry?.name ?? b.name ?? `Unknown (${id})`;
@@ -500,11 +504,15 @@ export async function updateAccountDataFromPasteService(pastedData) {
                 const count = b.cnt ?? 1;
 
                 if (id === 1000010) {
-                    wallPiecesByLevel[currentLevel] = (wallPiecesByLevel[currentLevel] || 0) + count;
+                    wallPiecesByLevel[b.lvl] = (wallPiecesByLevel[b.lvl] || 0) + count;
                     continue;
                 }
 
-                for (let i = 0; i < (b.count ?? 0); i++) {
+                if( !buildingTypes.includes(buildingType) ) {
+                    continue;
+                }
+
+                for (let i = 0; i < count; i++) {
                     const building = new Building({
                         name: buildingName,
                         buildingType: buildingType,
@@ -513,8 +521,32 @@ export async function updateAccountDataFromPasteService(pastedData) {
                         status: 'Idle',
                         account: account._id
                     });
+                    console.log('building being created.')
                     await building.save({ session });
                     buildingIds.push(building._id);
+                }
+            }
+
+            for (const trap of pastedData.traps ?? []) {
+                const id = Number(trap.data ?? trap._id ?? trap['data'] ?? NaN);
+                const staticEntry = static_data.traps.find((s) => s._id === id);
+                const trapName = staticEntry?.name ?? trap.name ?? `Unknown Trap (${id})`;
+                const trapType = staticEntry?.village === 'builderBase' ? 'Builder Trap' : 'Trap';
+                const currentLevel = Number(trap.lvl ?? 0);
+                const maxLevel = trap.maxLevel ?? currentLevel;
+                const count = Number(trap.count ?? trap.cnt ?? 1) || 0;
+
+                for (let i = 0; i < count; i++) {
+                    const trapDoc = new Building({
+                        name: trapName,
+                        buildingType: trapType,
+                        currentLevel,
+                        maxLevel,
+                        status: 'Idle',
+                        account: account._id
+                    });
+                    await trapDoc.save({ session });
+                    buildingIds.push(trapDoc._id);
                 }
             }
 
@@ -526,8 +558,11 @@ export async function updateAccountDataFromPasteService(pastedData) {
                     .map(([lvl, cnt]) => ({ level: Number(lvl) || 1, count: cnt }))
                     .sort((a, b) => a.level - b.level);
                 const maxLevel = levels.reduce((m, l) => Math.max(m, l.level), account.townHallLevel || 1);
-                const wallGroup = new WallGroup({ account: account._id, maxLevel, levels });
-                await wallGroup.save({ session });
+                const wallGroup = await WallGroup.findOneAndUpdate(
+                    { account: account._id },
+                    { maxLevel, levels },
+                    { session, upsert: true, new: true, setDefaultsOnInsert: true }
+                );
                 account.walls = wallGroup._id;
             }
 
