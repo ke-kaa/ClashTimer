@@ -14,7 +14,8 @@ import {
     searchAccounts,
     getAccountsForDashboardController,
     getVillageController,
-    addVillageDetailController
+    addVillageDetailController,
+    updateAccountDataFRomPasteController,
 } from '../controllers/accountController.js';
 
 const router = Router();
@@ -51,6 +52,9 @@ router.patch('/:id', requireAuth, ensureAccountAccessFromParam('id'), updateAcco
 
 // DELETE /api/accounts/:id
 router.delete('/:id', requireAuth, ensureAccountAccessFromParam('id'), deleteAccount);
+
+// POST /api/account/paste 
+router.post('/paste', requireAuth, updateAccountDataFRomPasteController);
 
 // GET /api/clans/:clanTag/accounts
 router.get('/clan/by/:clanTag/list', requireAuth, getAccountsByClan); // alt path if you prefer: /api/clans/:clanTag/accounts
