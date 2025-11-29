@@ -877,7 +877,7 @@ export const itemsByTownHall = {
             { name: 'Electro Titan', currentLevel: 0, maxLevel: 2, type: 'Elixir', housingSpace: 32 },
             
             { name: 'Minion', currentLevel: 0, maxLevel: 10, type: 'Dark Elixir', housingSpace: 2 },
-            { name: 'Hog Rider', currentLevel: 0, maxLevel: 10, type: 'Dark Elixir', housingSpace: 5 },
+            { name: 'Hog Rider', currentLevel: 0, maxLevel: 11, type: 'Dark Elixir', housingSpace: 5 },
             { name: 'Valkyrie', currentLevel: 0, maxLevel: 9, type: 'Dark Elixir', housingSpace: 8 },
             { name: 'Golem', currentLevel: 0, maxLevel: 11, type: 'Dark Elixir', housingSpace: 30 },
             { name: 'Witch', currentLevel: 0, maxLevel: 5, type: 'Dark Elixir', housingSpace: 12 },
