@@ -13,7 +13,23 @@ import {
     updateAccountPreferencesService,
     getAccountByPlayerTagService,
     searchAccountsService,
+    getVillageOverviewsService,
 } from "../services/accountService.js";
+
+export async function getVillageOverviewsController(req, res) {
+    try {
+        const userId = req.user?.id || req.user?._id;
+        if (!userId)
+            return res.status(401).json({ error: "Authentication required" });
+
+        const villagesOverview = await getVillageOverviewsService({ userId });
+        return res.json(villagesOverview);
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message || "Could not load villages overview",
+        });
+    }
+}
 
 export async function getVillageController(req, res) {
     try {
@@ -41,12 +57,9 @@ export async function updateAccountDataFRomPasteController(req, res) {
         return res.json(updatedAccount);
     } catch (error) {
         console.error("updateAccountDataFromPasteController error", error);
-        return res
-            .status(error.status || 500)
-            .json({
-                error:
-                    error.message || "Failed to update account from paste data",
-            });
+        return res.status(error.status || 500).json({
+            error: error.message || "Failed to update account from paste data",
+        });
     }
 }
 
