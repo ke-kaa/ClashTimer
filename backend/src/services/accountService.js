@@ -16,10 +16,31 @@ import createHttpError from 'http-errors';
 import fs from 'fs/promises';
 import path from 'path';
 import static_data from '../utils/static_data.json' with { type: "json" };
+import strict from "assert/strict";
 
 const filePath = path.resolve(process.cwd(), 'data.json');
 
 const myCache = new NodeCache({ stdTTL: 120, checkperiod: 120 });
+
+export async function getVillageOverviewsService({ userId }) {
+    const userAccounts = await Account.find({ owner: userId })
+                            .select('username playerTag townHallLevel expLevel warStars');
+    const townHalls = userAccounts.map(item => item.townHallLevel);
+    const expLevel = userAccounts.map(item => userAccounts.expLevel);
+    const warStars = userAccounts.map(item => userAccounts.warStars);
+
+    const overview = {
+        villagesLinked: userAccounts.length,
+        highestTownHall: Math.max(...townHalls),
+        lowestTownHall: Math.min(...townHalls),
+        highestXP: Math.max(...expLevel),
+        lowestXP: Math.min(...expLevel),
+        highestClanWarStars: Math.max(...warStars),
+        lowestClanWarStars: Math.min(...warStars)
+    }
+
+    return overview;
+}
 
 export async function getVillageService(playerTag) {
     const playerData = await getPlayer(playerTag);
@@ -135,6 +156,8 @@ export async function getAccountDetailService(userId, accountId){
     account.lastActive = new Date();
     await account.save();
 
+    const accountProgress = calculateAccountProgress(account);
+    account.set('progress', accountProgress, { strict: false});
     return account;
 }
 
@@ -545,6 +568,7 @@ export async function updateAccountDataFromPasteService(pastedData) {
                         status: 'Idle',
                         account: account._id
                     });
+                    console.log(trapDoc.name);
                     await trapDoc.save({ session });
                     buildingIds.push(trapDoc._id);
                 }
@@ -840,6 +864,8 @@ export async function getAccountByPlayerTagService(userId, playerTag) {
     // } catch (writeError) {
     //     console.error('Failed to persist account detail snapshot', writeError);
     // }
+    const accountProgress = calculateAccountProgress(account);
+    account.set('progress', accountProgress, { strict: false});
 
     return account;
 }
@@ -924,3 +950,64 @@ function buildWallStats(wallGroup) {
     return { total, maxed, maxLevel, perLevel };
 }
 
+function calculateAccountProgress(accountData = {}) {
+    const sumLevels = (items = []) =>
+        items.reduce(
+            (acc, item) => {
+                acc.current += Number(item.currentLevel ?? item.level ?? 0);
+                acc.max += Number(item.maxLevel ?? item.level ?? 0);
+                return acc;
+            },
+            { current: 0, max: 0 }
+        );
+
+    const buildings = sumLevels(accountData.buildings);
+    const heroes = sumLevels(accountData.heroes);
+    const troops = sumLevels(accountData.troops);
+    const pets = sumLevels(accountData.pets);
+    const sieges = sumLevels(accountData.siege);
+    const spells = sumLevels(accountData.spells);
+
+    const walls = (() => {
+        const segments = accountData.walls?.levels ?? accountData.walls?.segments ?? [];
+        const totals = segments.reduce(
+            (acc, seg) => {
+                const level = Number(seg.level ?? seg.currentLevel ?? 0);
+                const count = Number(seg.count ?? 0);
+                acc.current += level * count;
+                acc.count += count;
+                return acc;
+            },
+            { current: 0, count: 0 }
+        );
+        const maxLevel = Number(accountData.walls?.maxLevel ?? 0);
+        const denom = maxLevel * totals.count;
+        return {
+            current: totals.current,
+            max: denom,
+            percentage: denom ? Math.floor((totals.current / denom) * 100) : 0
+        };
+    })();
+
+    const toPercent = ({ current, max }) => (max ? (current / max) * 100 : 0);
+
+    console.log({
+        buildings: { ...buildings, percentage: toPercent(buildings) },
+        heroes: { ...heroes, percentage: toPercent(heroes) },
+        troops: { ...troops, percentage: toPercent(troops) },
+        pets: { ...pets, percentage: toPercent(pets) },
+        sieges: { ...sieges, percentage: toPercent(sieges) },
+        spells: { ...spells, percentage: toPercent(spells) },
+        walls
+    })
+
+    return {
+        buildings: { ...buildings, percentage: Math.floor(toPercent(buildings)) },
+        heroes: { ...heroes, percentage: Math.floor(toPercent(heroes)) },
+        troops: { ...troops, percentage: Math.floor(toPercent(troops)) },
+        pets: { ...pets, percentage: Math.floor(toPercent(pets)) },
+        sieges: { ...sieges, percentage: Math.floor(toPercent(sieges)) },
+        spells: { ...spells, percentage: Math.floor(toPercent(spells)) },
+        walls
+    };
+}
