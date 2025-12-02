@@ -1,13 +1,20 @@
-import React from 'react';
+import React from "react";
 
-export default function StatCard({ title, value, backgroundImage, className = '' }) {
-    const isNumber = typeof value === 'number';
+export default function StatCard({
+    title,
+    value,
+    backgroundImage,
+    className = "",
+}) {
+    const isNumber = typeof value === "number";
 
-    const cardStyle = backgroundImage ? {
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-    } : {};
+    const cardStyle = backgroundImage
+        ? {
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+          }
+        : {};
 
     return (
         <div
@@ -15,18 +22,20 @@ export default function StatCard({ title, value, backgroundImage, className = ''
             style={cardStyle}
         >
             <div className="relative z-10 flex flex-col flex-grow">
-                <h3 className="text-[14px] text-white font-bold text-center">{title}</h3>
+                <h3 className="text-[14px] text-white font-bold text-center">
+                    {title}
+                </h3>
                 <div className="flex-grow flex items-center">
-                    {isNumber ? (
-                        <p className="w-full text-center text-[34px] font-extrabold text-white">
-                            {value}
-                        </p>
-                    ) : (
+                    {/* {isNumber ? ( */}
+                    <p className="w-full text-center text-[34px] font-extrabold text-white">
+                        {value}
+                    </p>
+                    {/* ) : (
                         <div className="text-left">
                             <p className="text-[15px] text-white">{value.accountName}</p>
                             <p className="text-[12px] text-white">{value.playerTag}</p>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>
