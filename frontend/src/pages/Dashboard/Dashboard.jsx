@@ -1,30 +1,33 @@
-import './Dashboard.css'
-import React, { useState } from 'react' // Import useState
-import { Link } from 'react-router-dom';
-import StatCard from '../../components/Dashboard/StatCard/StatCard';
-import CustomDropdown from '../../components/UI/CustomDropdown/CustomDropdown';
-import AddVillageCard from '../../components/AddVillageCard/AddVillageCard'; 
-import VillageCard from '../../components/Dashboard/VillageCard/VillageCard';
-import TH16 from '../../assets/VillageCard/TH16.png'
-import NavBar from '../../components/NavBar/NavBar';
-import { getAccountsForDashboard } from '../../services/accountServices';
-import { useEffect } from 'react';
-import Townhall2 from '../../components/VillageCards/Townhall2';
-import Townhall3 from '../../components/VillageCards/Townhall3';
-import Townhall4 from '../../components/VillageCards/Townhall4';
-import Townhall5 from '../../components/VillageCards/Townhall5';
-import Townhall6 from '../../components/VillageCards/Townhall6';
-import Townhall7 from '../../components/VillageCards/Townhall7';
-import Townhall8 from '../../components/VillageCards/Townhall8';
-import Townhall9 from '../../components/VillageCards/Townhall9';
-import Townhall10 from '../../components/VillageCards/Townhall10';
-import Townhall11 from '../../components/VillageCards/Townhall11';
-import Townhall12 from '../../components/VillageCards/Townhall12';
-import Townhall13 from '../../components/VillageCards/Townhall13';
-import Townhall14 from '../../components/VillageCards/Townhall14';
-import Townhall15 from '../../components/VillageCards/Townhall15';
-import Townhall16 from '../../components/VillageCards/Townhall16';
-import Townhall17 from '../../components/VillageCards/Townhall17';
+import "./Dashboard.css";
+import React, { useState } from "react"; // Import useState
+import { Link } from "react-router-dom";
+import StatCard from "../../components/Dashboard/StatCard/StatCard";
+import CustomDropdown from "../../components/UI/CustomDropdown/CustomDropdown";
+import AddVillageCard from "../../components/AddVillageCard/AddVillageCard";
+import VillageCard from "../../components/Dashboard/VillageCard/VillageCard";
+import TH16 from "../../assets/VillageCard/TH16.png";
+import NavBar from "../../components/NavBar/NavBar";
+import {
+    getAccountsForDashboard,
+    getVillageOverviewDashboard,
+} from "../../services/accountServices";
+import { useEffect } from "react";
+import Townhall2 from "../../components/VillageCards/Townhall2";
+import Townhall3 from "../../components/VillageCards/Townhall3";
+import Townhall4 from "../../components/VillageCards/Townhall4";
+import Townhall5 from "../../components/VillageCards/Townhall5";
+import Townhall6 from "../../components/VillageCards/Townhall6";
+import Townhall7 from "../../components/VillageCards/Townhall7";
+import Townhall8 from "../../components/VillageCards/Townhall8";
+import Townhall9 from "../../components/VillageCards/Townhall9";
+import Townhall10 from "../../components/VillageCards/Townhall10";
+import Townhall11 from "../../components/VillageCards/Townhall11";
+import Townhall12 from "../../components/VillageCards/Townhall12";
+import Townhall13 from "../../components/VillageCards/Townhall13";
+import Townhall14 from "../../components/VillageCards/Townhall14";
+import Townhall15 from "../../components/VillageCards/Townhall15";
+import Townhall16 from "../../components/VillageCards/Townhall16";
+import Townhall17 from "../../components/VillageCards/Townhall17";
 
 const TOWNHALL_CARD_COMPONENTS = {
     2: Townhall2,
@@ -50,7 +53,8 @@ export default function Dashboard() {
     const [isAddCardOpen, setIsAddCardOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const [overview, setOverview] = useState({});
+    const [overviewError, setOverviewError] = useState(null);
 
     useEffect(() => {
         async function fetchAccounts() {
@@ -58,21 +62,39 @@ export default function Dashboard() {
                 const data = await getAccountsForDashboard();
                 setAccounts(data);
             } catch (error) {
-                setError(error.message || 'Failed to load accounts');
+                setError(error.message || "Failed to load accounts");
             } finally {
                 setLoading(false);
             }
         }
+        async function getVillagesOverview() {
+            try {
+                const overview_data = await getVillageOverviewDashboard();
+                console.log(overview_data);
+                setOverview(overview_data);
+            } catch (error) {
+                setOverviewError(
+                    error.message || "Failed to load villages overview."
+                );
+            }
+        }
         fetchAccounts();
+        getVillagesOverview();
     }, []);
 
     const renderAccountCard = (account, index) => {
-        const level = Number(account?.townHallLevel ?? account?.townhallLevel ?? account?.townhall);
+        const level = Number(
+            account?.townHallLevel ??
+                account?.townhallLevel ??
+                account?.townhall
+        );
         const CardComponent = TOWNHALL_CARD_COMPONENTS[level];
         const key = account?._id || account?.playerTag || `account-${index}`;
-        const name = account?.username || account?.name || 'Unnamed Village';
-        const sanitizedTag = account?.playerTag?.replace(/^#/, '');
-        const detailPath = sanitizedTag ? `/village/${encodeURIComponent(sanitizedTag)}` : null;
+        const name = account?.username || account?.name || "Unnamed Village";
+        const sanitizedTag = account?.playerTag?.replace(/^#/, "");
+        const detailPath = sanitizedTag
+            ? `/village/${encodeURIComponent(sanitizedTag)}`
+            : null;
 
         const cardNode = CardComponent ? (
             <CardComponent
@@ -114,52 +136,78 @@ export default function Dashboard() {
         }
 
         if (!accounts.length) {
-            return <p className="text-center text-white/70">No villages linked yet.</p>;
+            return (
+                <p className="text-center text-white/70">
+                    No villages linked yet.
+                </p>
+            );
         }
 
         return accounts.map(renderAccountCard);
     };
 
+    const {
+        villagesLinked = 0,
+        highestTownHall = 0,
+        lowestTownHall = 0,
+        highestXP = 0,
+        lowestXP = 0,
+        highestClanWarStars = 0,
+        lowestClanWarStars = 0,
+    } = overview;
+
     const stats = [
-        { title: 'Villages Linked', value: 3 },
-        { title: 'Highest Town Hall Level', value: 16 },
-        { title: 'Most Upgraded Account', value: { accountName: 'AccountName', playerTag: '#PlayerTag' } },
-        { title: 'Average Town Hall Level', value: 11 },
-        { title: 'Average Base Completion', value: '60%' },
-        { title: 'Highest XP', value: 220 },
-        { title: 'Inactive Accounts Count', value: 2 },
-        { title: 'Average Clan War Stars', value: 2 },
+        { title: "Villages Linked", value: villagesLinked },
+        { title: "Highest Town Hall Level", value: highestTownHall },
+        { title: "Lowest Town Hall Level", value: lowestTownHall },
+        { title: "Highest XP", value: highestXP },
+        { title: "Lowest XP", value: lowestXP },
+        { title: "Highest Clan War Stars", value: highestClanWarStars },
+        { title: "Lowest Clan War Stars", value: lowestClanWarStars },
     ];
 
     const cardElements = stats.map((s, i) => (
-        <StatCard key={i} className="stat-card" title={s.title} value={s.value} />
+        <StatCard
+            key={i}
+            className="stat-card"
+            title={s.title}
+            value={s.value}
+        />
     ));
 
     return (
-        <div className='min-h-screen flex flex-col bg-[#0c1220]'>
+        <div className="min-h-screen flex flex-col bg-[#0c1220]">
             <NavBar />
-            <p className='font-extrabold text-2xl bg-gradient-to-b from-[#a0e1fd] to-white bg-clip-text text-transparent ml-30 py-10'>Villages Overview</p>
+            <p className="font-extrabold text-2xl bg-gradient-to-b from-[#a0e1fd] to-white bg-clip-text text-transparent ml-30 py-10">
+                Villages Overview
+            </p>
 
             <div
-                className='relative w-[95%] h-[162px] mx-auto flex items-center overflow-hidden px-4 marquee-container'
+                className="relative w-[95%] h-[162px] mx-auto flex items-center overflow-hidden px-4 marquee-container"
                 style={{
-                    borderTop: '1px solid #a0e1fd',
-                    borderBottom: '1px solid #a0e1fd',
-                    boxShadow: 'inset 0 0 10px rgba(12, 18, 32, 1)',
+                    borderTop: "1px solid #a0e1fd",
+                    borderBottom: "1px solid #a0e1fd",
+                    boxShadow: "inset 0 0 10px rgba(12, 18, 32, 1)",
                 }}
             >
-                <div className='flex gap-15 animate-loop-scroll'>
+                <div className="flex gap-15 animate-loop-scroll">
                     {cardElements}
-                    {cardElements} 
+                    {cardElements}
                 </div>
             </div>
 
-            <div className='mt-10 w-[1214px] mx-auto px-10 flex justify-between items-center'>
-                <p >Your Villages are displayed below. Click the 'Add New Village' button to add another.</p>
+            <div className="mt-10 w-[1214px] mx-auto px-10 flex justify-between items-center">
+                <p>
+                    Your Villages are displayed below. Click the 'Add New
+                    Village' button to add another.
+                </p>
                 <div className="flex items-center gap-4">
                     <CustomDropdown />
                     {/* Add onClick handler to open the modal */}
-                    <button onClick={() => setIsAddCardOpen(true)} className="flex items-center gap-2 text-white">
+                    <button
+                        onClick={() => setIsAddCardOpen(true)}
+                        className="flex items-center gap-2 text-white"
+                    >
                         {/* The circular icon container */}
                         <div className="relative w-[29px] h-[29px] rounded-full bg-[#1A202C] shadow-[0_0_4px_2px_#a0e1fd]">
                             {/* Vertical bar */}
@@ -183,13 +231,13 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
-            <div className='flex-1 flex flex-col mt-10 pb-10'>
-                <div className='flex flex-col gap-10 flex-1'>
+            <div className="flex-1 flex flex-col mt-10 pb-10">
+                <div className="flex flex-col gap-10 flex-1 mb-8">
                     {renderVillageSection()}
                 </div>
 
                 <hr className="border-t border-[#a0e1fd]/40" />
             </div>
         </div>
-    )
+    );
 }
