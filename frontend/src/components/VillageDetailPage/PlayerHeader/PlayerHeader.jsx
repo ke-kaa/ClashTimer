@@ -1,8 +1,15 @@
-import React from 'react'
-import ProgressBarGroup from '../ProgressBarGroup/ProgressBarGroup';
+import React from "react";
+import ProgressBarGroup from "../ProgressBarGroup/ProgressBarGroup";
 
+export default function PlayerHeader({
+    accountName,
+    playerTag,
+    townHallIcon,
+    townHallLevel,
+    progress,
+}) {
+    const hasProgress = progress && typeof progress === "object";
 
-export default function PlayerHeader({accountName, playerTag, townHallIcon, townHallLevel }) {
     return (
         <div className="flex justify-between items-center my-10 px-40 max-w-[1900px] mx-auto">
             <div>
@@ -12,15 +19,16 @@ export default function PlayerHeader({accountName, playerTag, townHallIcon, town
 
             <div className="flex flex-col items-center">
                 <img
-                src={townHallIcon}
-                alt="Town hall icon"
-                className="w-[224px] h-[224px"
+                    src={townHallIcon}
+                    alt="Town hall icon"
+                    className="w-[224px] h-[224px"
                 />
-                <h2 className="text-2xl font-semibold mt-2">Townhall {townHallLevel}</h2>
+                <h2 className="text-2xl font-semibold mt-2">
+                    Townhall {townHallLevel}
+                </h2>
             </div>
 
-            <ProgressBarGroup />
+            {hasProgress && <ProgressBarGroup progress={progress} />}
         </div>
     );
 }
-
