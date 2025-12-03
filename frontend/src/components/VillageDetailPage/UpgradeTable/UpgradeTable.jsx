@@ -192,6 +192,9 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                     <thead>
                         <tr className="text-xs text-gray-400 bg-white/5">
                             <th className="p-3 w-48">Item</th>
+                            {category === "Walls" && (
+                                <th className="p-3 text-center">Quantity</th>
+                            )}
                             <th className="p-3 text-center">Current / Max</th>
                             <th className="p-3 text-center">Next Level</th>
                             <th className="p-3 text-center">Next Cost</th>

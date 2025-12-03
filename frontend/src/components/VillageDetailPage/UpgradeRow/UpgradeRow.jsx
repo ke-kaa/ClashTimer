@@ -18,6 +18,7 @@ export default function UpgradeRow({
     totalTime,
     status,
     progress,
+    count,
 }) {
     const [showUpgradeCard, setShowUpgradeCard] = useState(false);
 
@@ -101,6 +102,9 @@ export default function UpgradeRow({
                 <td className="p-2 align-middle">
                     <img src={image} alt="" className="w-16 h-16" />
                 </td>
+                {activeTab === "Walls" && (
+                    <td className="text-center align-middle">{count}</td>
+                )}
                 <td className="text-center align-middle">
                     {currentLevel}/{maxLevel}
                 </td>
