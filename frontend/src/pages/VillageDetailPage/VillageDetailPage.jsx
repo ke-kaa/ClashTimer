@@ -33,6 +33,25 @@ export default function VillageDetailPage() {
         return TOWN_HALL_ICONS[key];
     };
 
+    const normalizeWallItems = (wallData) => {
+        if (!wallData?.levels) return [];
+        const maxLevel = Number(wallData.maxLevel ?? 0) || 0;
+
+        return wallData.levels.map((segment, index) => {
+            const level = Number(segment.level ?? 0);
+            return {
+                ...segment,
+                _id: `wall-${level}-${index}`,
+                name: "Walls",
+                displayName: `Wall Level ${level}`,
+                currentLevel: level,
+                maxLevel: maxLevel || level,
+                nextLevel: Math.min(level + 1, maxLevel || level + 1),
+                count: Number(segment.count ?? 0),
+            };
+        });
+    };
+
     const fetchVillageDetail = useCallback(async () => {
         setLoading(true);
         try {
@@ -161,7 +180,7 @@ export default function VillageDetailPage() {
         Heroes: villageDetail.heroes,
         Equipment: villageDetail.equipments,
         Pets: villageDetail.pets,
-        Walls: villageDetail.walls ? [villageDetail.walls] : [],
+        Walls: normalizeWallItems(villageDetail.walls),
     };
     const itemsForActiveTab = categoryMap[activeTab] ?? [];
 

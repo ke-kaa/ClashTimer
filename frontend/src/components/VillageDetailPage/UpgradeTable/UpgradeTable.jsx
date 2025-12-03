@@ -7,6 +7,9 @@ const CATEGORY_ICON_IMPORTS = import.meta.glob(
 const BUILDING_ICON_IMPORTS = import.meta.glob(
     "../../../assets/VillageDetail/Buildings/**/*.png"
 );
+const WALL_ICON_IMPORTS = import.meta.glob(
+    "../../../assets/VillageDetail/Walls/*.png"
+);
 
 const BUILDING_TABS = new Set([
     "Defenses",
@@ -52,7 +55,35 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
             setLoadingIcons(true);
 
             try {
-                if (BUILDING_TABS.has(category)) {
+                if (category === "Walls") {
+                    const keysToLoad = new Set(
+                        normalizedItems.map(
+                            (item) =>
+                                `../../../assets/VillageDetail/Walls/wall-${item.__level}.png`
+                        )
+                    );
+                    const validKeys = [...keysToLoad].filter(
+                        (k) => WALL_ICON_IMPORTS[k]
+                    );
+                    const results = await Promise.all(
+                        validKeys.map(async (key) => {
+                            const mod = await WALL_ICON_IMPORTS[key]();
+                            return { key, url: mod?.default ?? mod };
+                        })
+                    );
+
+                    if (!mounted) return;
+                    const map = {};
+                    results.forEach(({ key, url }) => {
+                        const base = key
+                            .split("/")
+                            .pop()
+                            .replace(/\.[^/.]+$/, "");
+                        map[base] = url; // wall-1
+                    });
+                    setIconsMap(map);
+                    return;
+                } else if (BUILDING_TABS.has(category)) {
                     const keysToLoad = new Set();
 
                     normalizedItems.forEach((item) => {
@@ -79,13 +110,27 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                     const map = {};
                     results.forEach(({ key, url }) => {
                         const parts = key.split("/");
-                        const slugFolder = parts.at(-2); // building slug folder
-                        const fileName = parts.at(-1); // file name
-                        const baseName = fileName.replace(/\.[^/.]+$/, ""); // e.g. cannon-5
+                        const slugFolderRaw = parts.at(-2);
+                        const slugFolder = slugFolderRaw?.toLowerCase();
+                        const fileName = parts.at(-1);
+                        const baseName = fileName.replace(/\.[^/.]+$/, "");
+                        const levelSuffix = baseName.split("-").at(-1);
+
                         map[key] = url;
-                        map[`${slugFolder}-${baseName.split("-").at(-1)}`] =
-                            url; // slug-level key
-                        map[slugFolder] = map[slugFolder] || url; // fallback
+
+                        if (slugFolderRaw && levelSuffix) {
+                            map[`${slugFolderRaw}-${levelSuffix}`] = url;
+                        }
+                        if (slugFolder && levelSuffix) {
+                            map[`${slugFolder}-${levelSuffix}`] = url;
+                        }
+
+                        if (slugFolderRaw) {
+                            map[slugFolderRaw] = map[slugFolderRaw] || url;
+                        }
+                        if (slugFolder) {
+                            map[slugFolder] = map[slugFolder] || url;
+                        }
                     });
 
                     setIconsMap(map);
@@ -159,7 +204,13 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                     <tbody>
                         {normalizedItems.map((item) => {
                             let image;
-                            if (BUILDING_TABS.has(category) && item.__slug) {
+                            if (category === "Walls") {
+                                const wallKey = `wall-${item.__level}`;
+                                image = iconsMap[wallKey];
+                            } else if (
+                                BUILDING_TABS.has(category) &&
+                                item.__slug
+                            ) {
                                 const levelKey = `${item.__slug}-${item.__level}`;
                                 image =
                                     iconsMap[levelKey] || iconsMap[item.__slug];
