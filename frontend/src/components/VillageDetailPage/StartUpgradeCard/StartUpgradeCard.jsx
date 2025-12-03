@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
 export default function StartUpgradeCard({
+    accountId,
+    activeTab,
     defaultDuration = { days: 0, hours: 0, minutes: 0 },
     onUpgrade,
     onCancel,
@@ -24,11 +26,18 @@ export default function StartUpgradeCard({
     };
 
     const handleUpgrade = () => {
-        onUpgrade?.({
+        const normalized = {
             days: Number(duration.days || defaultDuration.days) || 0,
             hours: Number(duration.hours || defaultDuration.hours) || 0,
             minutes: Number(duration.minutes || defaultDuration.minutes) || 0,
-        });
+        };
+
+        const totalSeconds =
+            normalized.days * 24 * 60 * 60 +
+            normalized.hours * 60 * 60 +
+            normalized.minutes * 60;
+
+        onUpgrade?.(accountId, activeTab, totalSeconds);
     };
 
     return (
@@ -67,6 +76,7 @@ export default function StartUpgradeCard({
                         Cancel
                     </button>
                     <button
+                        type="button"
                         onClick={handleUpgrade}
                         className="rounded-full w-[81px] items-center bg-[#a0e1fd] py-2 text-sm font-semibold text-[#0f172a] hover:bg-[#97d2f4] transition-colors"
                     >

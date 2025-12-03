@@ -22,7 +22,7 @@ const slugify = (value = "") =>
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-export default function UpgradeTable({ category, items = [] }) {
+export default function UpgradeTable({ accountId, category, items = [] }) {
     const hasItems = items.length > 0;
     const [iconsMap, setIconsMap] = useState({});
     const [loadingIcons, setLoadingIcons] = useState(false);
@@ -174,7 +174,9 @@ export default function UpgradeTable({ category, items = [] }) {
                             return (
                                 <UpgradeRow
                                     key={item._id || item.id}
+                                    accountId={accountId}
                                     itemId={item._id || item.id}
+                                    activeTab={category}
                                     image={image}
                                     {...item}
                                 />
