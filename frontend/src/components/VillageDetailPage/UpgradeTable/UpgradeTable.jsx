@@ -207,9 +207,13 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                     <tbody>
                         {normalizedItems.map((item) => {
                             let image;
+                            let nextImage;
+
                             if (category === "Walls") {
                                 const wallKey = `wall-${item.__level}`;
+                                const nextWallKey = `wall-${item.__level + 1}`;
                                 image = iconsMap[wallKey];
+                                nextImage = iconsMap[nextWallKey];
                             } else if (
                                 BUILDING_TABS.has(category) &&
                                 item.__slug
@@ -232,6 +236,7 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                                     itemId={item._id || item.id}
                                     activeTab={category}
                                     image={image}
+                                    nextImage={nextImage}
                                     {...item}
                                 />
                             );
