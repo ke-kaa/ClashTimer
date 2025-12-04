@@ -3,12 +3,15 @@ import { FaArrowUp } from "react-icons/fa";
 import { FaXmark, FaCheck, FaGear } from "react-icons/fa6";
 import StartUpgradeCard from "../StartUpgradeCard/StartUpgradeCard";
 import upgradeService from "../../../services/upgradeService";
+import WallUpgradeCard from "../WallUpgradeCard/WallUpgradeCard";
+import { startWallUpgrade } from "../../../services/wallService";
 
 export default function UpgradeRow({
     accountId,
     activeTab,
     itemId,
     image,
+    nextImage,
     currentLevel,
     maxLevel,
     nextLevel,
@@ -27,6 +30,19 @@ export default function UpgradeRow({
         setShowUpgradeCard(false);
     };
 
+    const handleWallUpgradeConfirm = async ({ count }) => {
+        try {
+            await startWallUpgrade(accountId, {
+                fromLevel: currentLevel,
+                toLevel: nextLevel,
+                count,
+            });
+            setShowUpgradeCard(false);
+        } catch (error) {
+            console.error("Failed to start wall upgrade:", error);
+        }
+    };
+
     const handleCancelUpgradeCard = () => setShowUpgradeCard(false);
 
     // Case 1: The item is fully upgraded for the current Town Hall level
@@ -36,10 +52,16 @@ export default function UpgradeRow({
                 <td className="p-2 align-middle">
                     <img src={image} alt="" className="w-16 h-16" />
                 </td>
+                {activeTab === "Walls" && (
+                    <td className="text-center">{count}</td>
+                )}
                 <td className="text-center align-middle">
                     {currentLevel}/{maxLevel}
                 </td>
-                <td colSpan="6" className="text-center font-semibold py-4">
+                <td
+                    colSpan="6"
+                    className="text-center text-white/80 font-semibold py-4"
+                >
                     Fully upgraded for this Town Hall Level
                 </td>
             </tr>
@@ -139,13 +161,30 @@ export default function UpgradeRow({
                         onClick={handleCancelUpgradeCard}
                     />
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
-                        <StartUpgradeCard
-                            accountId={accountId}
-                            activeTab={activeTab}
-                            defaultDuration={{ days: 0, hours: 0, minutes: 0 }}
-                            onUpgrade={handleUpgradeConfirm}
-                            onCancel={handleCancelUpgradeCard}
-                        />
+                        {activeTab === "Walls" ? (
+                            <WallUpgradeCard
+                                accountId={accountId}
+                                fromLevel={currentLevel}
+                                toLevel={nextLevel}
+                                count={count}
+                                fromImage={image}
+                                toImage={nextImage}
+                                onUpgrade={handleWallUpgradeConfirm}
+                                onCancel={handleCancelUpgradeCard}
+                            />
+                        ) : (
+                            <StartUpgradeCard
+                                accountId={accountId}
+                                activeTab={activeTab}
+                                defaultDuration={{
+                                    days: 0,
+                                    hours: 0,
+                                    minutes: 0,
+                                }}
+                                onUpgrade={handleUpgradeConfirm}
+                                onCancel={handleCancelUpgradeCard}
+                            />
+                        )}
                     </div>
                 </>
             )}
