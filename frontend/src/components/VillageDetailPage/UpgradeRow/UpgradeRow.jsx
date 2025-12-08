@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FaArrowUp } from "react-icons/fa";
 import { FaXmark, FaCheck, FaGear } from "react-icons/fa6";
 import StartUpgradeCard from "../StartUpgradeCard/StartUpgradeCard";
@@ -22,8 +22,102 @@ export default function UpgradeRow({
     status,
     progress,
     count,
+    upgradeStartTime,
+    upgradeEndTime,
 }) {
     const [showUpgradeCard, setShowUpgradeCard] = useState(false);
+    const [nowTs, setNowTs] = useState(Date.now());
+
+    const isUpgrading = status === "Upgrading";
+
+    useEffect(() => {
+        if (!isUpgrading) return;
+        const id = setInterval(() => setNowTs(Date.now()), 1000);
+        return () => clearInterval(id);
+    }, [isUpgrading]);
+
+    const { progressPercent, remainingMs } = useMemo(() => {
+        if (!upgradeStartTime || !upgradeEndTime) {
+            return { progressPercent: 0, remainingMs: 0 };
+        }
+        const startMs = new Date(upgradeStartTime).getTime();
+        const endMs = new Date(upgradeEndTime).getTime();
+        if (
+            !Number.isFinite(startMs) ||
+            !Number.isFinite(endMs) ||
+            endMs <= startMs
+        ) {
+            return { progressPercent: 0, remainingMs: 0 };
+        }
+        const elapsed = Math.min(nowTs - startMs, endMs - startMs);
+        const percent = Math.round(
+            Math.max(0, Math.min(1, elapsed / (endMs - startMs))) * 100
+        );
+        return {
+            progressPercent: percent,
+            remainingMs: Math.max(endMs - nowTs, 0),
+        };
+    }, [upgradeStartTime, upgradeEndTime, nowTs]);
+
+    const computeProgress = () => {
+        if (!upgradeStartTime || !upgradeEndTime) return 0;
+        const startMs = new Date(upgradeStartTime).getTime();
+        const endMs = new Date(upgradeEndTime).getTime();
+        const nowMs = Date.now();
+        if (
+            !Number.isFinite(startMs) ||
+            !Number.isFinite(endMs) ||
+            endMs <= startMs
+        ) {
+            return 0;
+        }
+        const elapsed = Math.min(nowMs - startMs, endMs - startMs);
+        if (elapsed)
+            console.log(
+                Math.max(0, Math.min(1, elapsed / (endMs - startMs))) * 100
+            );
+        return Math.round(
+            Math.max(0, Math.min(1, elapsed / (endMs - startMs))) * 100
+        );
+    };
+
+    const computeRemainingTime = () => {
+        if (!upgradeStartTime || !upgradeEndTime) return 0;
+        const startMs = new Date(upgradeStartTime).getTime();
+        const endMs = new Date(upgradeEndTime).getTime();
+        const nowMs = Date.now();
+        if (
+            !Number.isFinite(startMs) ||
+            !Number.isFinite(endMs) ||
+            endMs <= startMs
+        ) {
+            return 0;
+        }
+        const remainingMs = endMs - nowMs;
+
+        return remainingMs;
+    };
+
+    const remainingTime = computeRemainingTime();
+
+    function formatRemaining(ms) {
+        if (ms <= 0) return "0h 0m";
+
+        const totalMinutes = Math.floor(ms / 1000 / 60);
+        const totalHours = Math.floor(totalMinutes / 60);
+        const days = Math.floor(totalHours / 24);
+
+        const hours = totalHours % 24;
+        const minutes = totalMinutes % 60;
+
+        if (days > 0) {
+            return ` ${String(days)}d ${String(hours)}h`;
+        }
+
+        return ` ${String(hours)}h ${String(minutes)}m`;
+    }
+
+    const dynamicProgress = computeProgress();
 
     const handleUpgradeConfirm = (accountId, category, upgradeTime) => {
         upgradeService.start(accountId, category, itemId, { upgradeTime });
@@ -90,15 +184,16 @@ export default function UpgradeRow({
                             {/* Filled portion */}
                             <div
                                 className="h-full bg-[#a0e1fd] rounded-full"
-                                style={{ width: `${progress}%` }}
+                                style={{ width: `${progressPercent}%` }}
                             ></div>
                             {/* Percentage text positioned inside */}
                             <span className="absolute inset-0 flex items-center pl-2 text-xs font-bold text-black z-10">
-                                {progress}%
+                                {progressPercent}%
                             </span>
                         </div>
-                        <p className="text-xs text-gray-400 whitespace-nowrap">
-                            Upgrade completes in: 4d 7h
+                        <p className="text-xs whitespace-nowrap">
+                            Upgrade completes in:
+                            {formatRemaining(remainingMs)}
                         </p>
                         <div className="flex gap-3 text-lg mt-1">
                             <button className="text-red-500 hover:text-red-400 transition-colors">
