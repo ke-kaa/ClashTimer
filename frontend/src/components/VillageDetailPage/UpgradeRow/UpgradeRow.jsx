@@ -6,6 +6,7 @@ import upgradeService from "../../../services/upgradeService";
 import WallUpgradeCard from "../WallUpgradeCard/WallUpgradeCard";
 import { startWallUpgrade } from "../../../services/wallService";
 import ConfirmUpgradeCancel from "../ConfirmUpgradeCancel/ConfirmUpgradeCancel";
+import FinishUpgradeConfirm from "../FinishUpgradeCard/FinishUpgradeConfirm";
 
 export default function UpgradeRow({
     accountId,
@@ -29,6 +30,7 @@ export default function UpgradeRow({
     const [showUpgradeCard, setShowUpgradeCard] = useState(false);
     const [nowTs, setNowTs] = useState(Date.now());
     const [showUpgraceCancelCard, setShowUpgradeCancelCard] = useState(false);
+    const [showFinishCard, setShowFinishCard] = useState(false);
 
     const isUpgrading = status === "Upgrading";
 
@@ -140,6 +142,11 @@ export default function UpgradeRow({
         }
     };
 
+    const handleUpgradeFinish = () => {
+        upgradeService.finish(accountId, activeTab, itemId);
+        setShowFinishCard(false);
+    };
+
     const handleCancelUpgradeCard = () => setShowUpgradeCard(false);
     const handleCancelConfirmCanceCard = () => setShowUpgradeCancelCard(false);
 
@@ -209,7 +216,10 @@ export default function UpgradeRow({
                                 >
                                     <FaXmark />
                                 </button>
-                                <button className="text-green-500 hover:text-green-400 transition-colors">
+                                <button
+                                    onClick={() => setShowFinishCard(true)}
+                                    className="text-green-500 hover:text-green-400 transition-colors"
+                                >
                                     <FaCheck />
                                 </button>
                                 <button className="text-gray-400 hover:text-white transition-colors">
@@ -229,6 +239,20 @@ export default function UpgradeRow({
                             <ConfirmUpgradeCancel
                                 onCancel={handleUpgradeCancel}
                                 onClose={() => setShowUpgradeCancelCard(false)}
+                            />
+                        </div>
+                    </>
+                )}
+                {showFinishCard && (
+                    <>
+                        <div
+                            className="fixed inset-0 bg-black/60 z-40 "
+                            onClick={() => setShowFinishCard(false)}
+                        />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            <FinishUpgradeConfirm
+                                onFinish={handleUpgradeFinish}
+                                onClose={() => setShowFinishCard(false)}
                             />
                         </div>
                     </>
