@@ -15,13 +15,16 @@ import {
     getReadyBuildingsService,
     getBuildingUpgradeProgressService,
     getBuildingStatsService,
-} from '../services/buildingService.js';
+} from "../services/buildingService.js";
 
 // getAllBuildings removed: use account-scoped endpoints
 
 export async function getBuildingById(req, res) {
     try {
-        const building = await getBuildingByIdService(req.params.id, req.user?.id);
+        const building = await getBuildingByIdService(
+            req.params.id,
+            req.user?.id
+        );
         return res.json(building);
     } catch (error) {
         return res.status(error.status || 500).json({ error: error.message });
@@ -31,7 +34,10 @@ export async function getBuildingById(req, res) {
 export async function getBuildingsByAccount(req, res) {
     try {
         const { accountId } = req.params;
-        const buildings = await getBuildingsByAccountService(req.user?.id, accountId);
+        const buildings = await getBuildingsByAccountService(
+            req.user?.id,
+            accountId
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -53,7 +59,10 @@ export async function startBuildingUpgrade(req, res) {
     try {
         const { id } = req.params;
         const { upgradeCost, upgradeTime } = req.body;
-        const building = await startBuildingUpgradeService(id, { upgradeCost, upgradeTime });
+        const building = await startBuildingUpgradeService(id, {
+            upgradeCost,
+            upgradeTime,
+        });
         return res.json(building);
     } catch (error) {
         return res.status(error.status || 500).json({ error: error.message });
@@ -84,7 +93,11 @@ export async function getBuildingsByStatus(req, res) {
     try {
         const { status } = req.params;
         const { accountId } = req.query;
-        const buildings = await getBuildingsByStatusService(req.user?.id, accountId, status);
+        const buildings = await getBuildingsByStatusService(
+            req.user?.id,
+            accountId,
+            status
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(error.status || 500).json({ error: error.message });
@@ -95,7 +108,11 @@ export async function getBuildingsByType(req, res) {
     try {
         const { buildingType } = req.params;
         const { accountId } = req.query;
-        const buildings = await getBuildingsByTypeService(req.user?.id, accountId, buildingType);
+        const buildings = await getBuildingsByTypeService(
+            req.user?.id,
+            accountId,
+            buildingType
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -105,7 +122,10 @@ export async function getBuildingsByType(req, res) {
 export async function getUpgradeableBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        const buildings = await getUpgradeableBuildingsService(req.user?.id, accountId);
+        const buildings = await getUpgradeableBuildingsService(
+            req.user?.id,
+            accountId
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -115,7 +135,10 @@ export async function getUpgradeableBuildings(req, res) {
 export async function getMaxedBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        const buildings = await getMaxedBuildingsService(req.user?.id, accountId);
+        const buildings = await getMaxedBuildingsService(
+            req.user?.id,
+            accountId
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -136,7 +159,11 @@ export async function getBuildingsByBuildingType(req, res) {
     try {
         const { buildingType } = req.params;
         const { accountId } = req.query;
-        const buildings = await getBuildingsByBuildingTypeService(req.user?.id, accountId, buildingType);
+        const buildings = await getBuildingsByBuildingTypeService(
+            req.user?.id,
+            accountId,
+            buildingType
+        );
         return res.json(buildings);
     } catch (error) {
         return res.status(error.status || 500).json({ error: error.message });
@@ -146,7 +173,10 @@ export async function getBuildingsByBuildingType(req, res) {
 export async function getUpgradingBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        const buildings = await getUpgradingBuildingsService(req.user?.id, accountId);
+        const buildings = await getUpgradingBuildingsService(
+            req.user?.id,
+            accountId
+        );
 
         return res.json(buildings);
     } catch (error) {
@@ -157,7 +187,10 @@ export async function getUpgradingBuildings(req, res) {
 export async function getReadyBuildings(req, res) {
     try {
         const { accountId } = req.query;
-        const buildings = await getReadyBuildingsService(req.user?.id, accountId);
+        const buildings = await getReadyBuildingsService(
+            req.user?.id,
+            accountId
+        );
 
         return res.json(buildings);
     } catch (error) {
