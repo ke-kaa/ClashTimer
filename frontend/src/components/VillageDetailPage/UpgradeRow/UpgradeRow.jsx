@@ -5,6 +5,7 @@ import StartUpgradeCard from "../StartUpgradeCard/StartUpgradeCard";
 import upgradeService from "../../../services/upgradeService";
 import WallUpgradeCard from "../WallUpgradeCard/WallUpgradeCard";
 import { startWallUpgrade } from "../../../services/wallService";
+import ConfirmUpgradeCancel from "../ConfirmUpgradeCancel/ConfirmUpgradeCancel";
 
 export default function UpgradeRow({
     accountId,
@@ -27,6 +28,7 @@ export default function UpgradeRow({
 }) {
     const [showUpgradeCard, setShowUpgradeCard] = useState(false);
     const [nowTs, setNowTs] = useState(Date.now());
+    const [showUpgraceCancelCard, setShowUpgradeCancelCard] = useState(false);
 
     const isUpgrading = status === "Upgrading";
 
@@ -72,10 +74,6 @@ export default function UpgradeRow({
             return 0;
         }
         const elapsed = Math.min(nowMs - startMs, endMs - startMs);
-        if (elapsed)
-            console.log(
-                Math.max(0, Math.min(1, elapsed / (endMs - startMs))) * 100
-            );
         return Math.round(
             Math.max(0, Math.min(1, elapsed / (endMs - startMs))) * 100
         );
@@ -124,6 +122,11 @@ export default function UpgradeRow({
         setShowUpgradeCard(false);
     };
 
+    const handleUpgradeCancel = () => {
+        upgradeService.cancel(accountId, activeTab, itemId);
+        setShowUpgradeCancelCard(false);
+    };
+
     const handleWallUpgradeConfirm = async ({ count }) => {
         try {
             await startWallUpgrade(accountId, {
@@ -138,6 +141,7 @@ export default function UpgradeRow({
     };
 
     const handleCancelUpgradeCard = () => setShowUpgradeCard(false);
+    const handleCancelConfirmCanceCard = () => setShowUpgradeCancelCard(false);
 
     // Case 1: The item is fully upgraded for the current Town Hall level
     if (currentLevel === maxLevel) {
@@ -165,50 +169,71 @@ export default function UpgradeRow({
     // Case 2: The item is currently being upgraded
     if (status === "Upgrading") {
         return (
-            <tr className="border-b border-gray-800 hover:bg-gray-800/40 transition ">
-                <td className="p-2 align-middle">
-                    <img src={image} alt="" className="w-16 h-16" />
-                </td>
-                <td className="text-center align-middle">
-                    {currentLevel}/{maxLevel}
-                </td>
-                <td className="text-center align-middle">{nextLevel}</td>
-                <td className="text-center align-middle">{cost}</td>
-                <td className="text-center align-middle">{time}</td>
-                <td className="text-center align-middle">{totalCost}</td>
-                <td className="text-center align-middle">{totalTime}</td>
-                <td className="p-2 align-middle">
-                    <div className="flex flex-col items-center gap-1 w-40 mx-auto">
-                        {/* Updated Progress Bar */}
-                        <div className="relative w-full h-5 bg-gray-700 rounded-full">
-                            {/* Filled portion */}
-                            <div
-                                className="h-full bg-[#a0e1fd] rounded-full"
-                                style={{ width: `${progressPercent}%` }}
-                            ></div>
-                            {/* Percentage text positioned inside */}
-                            <span className="absolute inset-0 flex items-center pl-2 text-xs font-bold text-black z-10">
-                                {progressPercent}%
-                            </span>
+            <>
+                <tr className="border-b border-gray-800 hover:bg-gray-800/40 transition ">
+                    <td className="p-2 align-middle">
+                        <img src={image} alt="" className="w-16 h-16" />
+                    </td>
+                    <td className="text-center align-middle">
+                        {currentLevel}/{maxLevel}
+                    </td>
+                    <td className="text-center align-middle">{nextLevel}</td>
+                    <td className="text-center align-middle">{cost}</td>
+                    <td className="text-center align-middle">{time}</td>
+                    <td className="text-center align-middle">{totalCost}</td>
+                    <td className="text-center align-middle">{totalTime}</td>
+                    <td className="p-2 align-middle">
+                        <div className="flex flex-col items-center gap-1 w-40 mx-auto">
+                            {/* Updated Progress Bar */}
+                            <div className="relative w-full h-5 bg-gray-700 rounded-full">
+                                {/* Filled portion */}
+                                <div
+                                    className="h-full bg-[#a0e1fd] rounded-full"
+                                    style={{ width: `${progressPercent}%` }}
+                                ></div>
+                                {/* Percentage text positioned inside */}
+                                <span className="absolute inset-0 flex items-center pl-2 text-xs font-bold text-black z-10">
+                                    {progressPercent}%
+                                </span>
+                            </div>
+                            <p className="text-xs whitespace-nowrap">
+                                Upgrade completes in:
+                                {formatRemaining(remainingMs)}
+                            </p>
+                            <div className="flex gap-3 text-lg mt-1">
+                                <button
+                                    onClick={() =>
+                                        setShowUpgradeCancelCard(true)
+                                    }
+                                    className="text-red-500 hover:text-red-400 transition-colors"
+                                >
+                                    <FaXmark />
+                                </button>
+                                <button className="text-green-500 hover:text-green-400 transition-colors">
+                                    <FaCheck />
+                                </button>
+                                <button className="text-gray-400 hover:text-white transition-colors">
+                                    <FaGear />
+                                </button>
+                            </div>
                         </div>
-                        <p className="text-xs whitespace-nowrap">
-                            Upgrade completes in:
-                            {formatRemaining(remainingMs)}
-                        </p>
-                        <div className="flex gap-3 text-lg mt-1">
-                            <button className="text-red-500 hover:text-red-400 transition-colors">
-                                <FaXmark />
-                            </button>
-                            <button className="text-green-500 hover:text-green-400 transition-colors">
-                                <FaCheck />
-                            </button>
-                            <button className="text-gray-400 hover:text-white transition-colors">
-                                <FaGear />
-                            </button>
+                    </td>
+                </tr>
+                {showUpgraceCancelCard && (
+                    <>
+                        <div
+                            className="fixed inset-0 bg-black/60 z-40 "
+                            onClick={handleCancelConfirmCanceCard}
+                        />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            <ConfirmUpgradeCancel
+                                onCancel={handleUpgradeCancel}
+                                onClose={() => setShowUpgradeCancelCard(false)}
+                            />
                         </div>
-                    </div>
-                </td>
-            </tr>
+                    </>
+                )}
+            </>
         );
     }
 
