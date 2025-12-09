@@ -14,6 +14,7 @@ import {
     getPetUpgradeStatus,
     finishPetUpgrade,
     cancelPetUpgrade,
+    updatePetUpgradeTimeController,
 } from "../controllers/petController.js";
 
 const router = Router();
@@ -73,13 +74,21 @@ router.post(
     finishPetUpgrade
 );
 
-// POST /api/pets/account/:accountId/pets/:petId/upgrade/cancel -----
+// POST /api/pets/:accountId/:petId/upgrade/cancel -----
 router.post(
     "/:accountId/:petId/upgrade/cancel",
     requireAuth,
     ensureAccountAccessFromParam("accountId"),
     ensurePetOwnershipFromParam("petId"),
     cancelPetUpgrade
+);
+
+router.post(
+    "/:accountId/:petId/upgrade/update",
+    requireAuth,
+    ensureAccountAccessFromParam("accountId"),
+    ensurePetOwnershipFromParam("petId"),
+    updatePetUpgradeTimeController
 );
 
 // GET /api/pets/:id/upgrade/status

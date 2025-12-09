@@ -7,11 +7,15 @@ import {
     startPetUpgradeService,
     getPetUpgradeStatusService,
     finishPetUpgradeService,
-    cancelPetUpgradeService
-} from '../services/petService.js';
+    cancelPetUpgradeService,
+    updatePetUpgradeTimeService,
+} from "../services/petService.js";
 
 function handleError(res, error) {
-    return res.status(error.status || 500).json({ error: error.message, ...(error.availablePets ? { availablePets: error.availablePets } : {}) });
+    return res.status(error.status || 500).json({
+        error: error.message,
+        ...(error.availablePets ? { availablePets: error.availablePets } : {}),
+    });
 }
 
 export async function getPets(req, res) {
@@ -48,7 +52,10 @@ export async function assignPetToHero(req, res) {
     try {
         const accountId = req.params.accountId || req.accountId;
         const petId = req.params.petId || req.body?.petId;
-        const pet = await assignPetToHeroService(req.user?.id, accountId, { ...req.body, petId });
+        const pet = await assignPetToHeroService(req.user?.id, accountId, {
+            ...req.body,
+            petId,
+        });
         return res.json(pet);
     } catch (error) {
         return handleError(res, error);
@@ -70,14 +77,35 @@ export async function startPetUpgrade(req, res) {
     try {
         const accountId = req.params.accountId || req.accountId;
         const petId = req.params.petId || req.body?.petId;
-        const result = await startPetUpgradeService(req.user?.id, accountId, { ...req.body, petId });
+        const result = await startPetUpgradeService(req.user?.id, accountId, {
+            ...req.body,
+            petId,
+        });
         return res.json(result);
     } catch (error) {
         return handleError(res, error);
     }
 }
 
-// progress in % - it uses the user input time not the actual time of the official clash of clans upgrade 
+export async function updatePetUpgradeTimeController(req, res) {
+    try {
+        const accountId = req.params.accountId || req.accountId;
+        const petId = req.params.petId || req.body?.petId || req.params.id;
+        const result = await updatePetUpgradeTimeService(
+            req.user?.id,
+            accountId,
+            {
+                ...req.body,
+                petId,
+            }
+        );
+        return res.json(result);
+    } catch (error) {
+        return handleError(res, error);
+    }
+}
+
+// progress in % - it uses the user input time not the actual time of the official clash of clans upgrade
 // future improvement (too lazy to implement now) - the progress status (percentage) should be based on some config file containig the actual upgrade time
 export async function getPetUpgradeStatus(req, res) {
     try {
@@ -93,7 +121,10 @@ export async function finishPetUpgrade(req, res) {
     try {
         const accountId = req.params.accountId || req.accountId;
         const petId = req.params.petId || req.body?.petId;
-        const pet = await finishPetUpgradeService(req.user?.id, accountId, { ...req.body, petId });
+        const pet = await finishPetUpgradeService(req.user?.id, accountId, {
+            ...req.body,
+            petId,
+        });
         return res.json(pet);
     } catch (error) {
         return handleError(res, error);
@@ -104,7 +135,10 @@ export async function cancelPetUpgrade(req, res) {
     try {
         const accountId = req.params.accountId || req.accountId;
         const petId = req.params.petId || req.body?.petId;
-        const pet = await cancelPetUpgradeService(req.user?.id, accountId, { ...req.body, petId });
+        const pet = await cancelPetUpgradeService(req.user?.id, accountId, {
+            ...req.body,
+            petId,
+        });
         return res.json(pet);
     } catch (error) {
         return handleError(res, error);
@@ -120,5 +154,5 @@ export default {
     startPetUpgrade,
     getPetUpgradeStatus,
     finishPetUpgrade,
-    cancelPetUpgrade
+    cancelPetUpgrade,
 };
