@@ -1,43 +1,57 @@
-import Account  from '../models/Account.js';
-import  Siege  from '../models/Siege.js';
-import { computeUpgradeStatus } from '../utils/computeUpgradeStatusUtils.js';
-import { startUpgrade } from '../utils/upgradeUtils.js';
-import { canFinishUpgrade, finishUpgrade } from '../utils/upgradeUtils.js';
-import { itemsByTownHall } from '../utils/itemsByTownHall.js';
+import Account from "../models/Account.js";
+import Siege from "../models/Siege.js";
+import { computeUpgradeStatus } from "../utils/computeUpgradeStatusUtils.js";
+import { startUpgrade } from "../utils/upgradeUtils.js";
+import { canFinishUpgrade, finishUpgrade } from "../utils/upgradeUtils.js";
+import { itemsByTownHall } from "../utils/itemsByTownHall.js";
 
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export async function unlockSiegeService({ accountId, input }) {
     if (!mongoose.Types.ObjectId.isValid(accountId)) {
-        throw { status: 400, message: 'Invalid accountId format' };
+        throw { status: 400, message: "Invalid accountId format" };
     }
 
-    const account = await Account.findById(accountId).select('townHallLevel sieges');
+    const account = await Account.findById(accountId).select(
+        "townHallLevel sieges"
+    );
     if (!account) {
-        throw { status: 404, message: 'Account not found' };
+        throw { status: 404, message: "Account not found" };
     }
 
     const normalizedType = input;
 
     // Duplicate check
-    const existing = await Siege.findOne({ account: accountId, siegeType: normalizedType });
+    const existing = await Siege.findOne({
+        account: accountId,
+        siegeType: normalizedType,
+    });
     if (existing) {
-        throw { status: 409, message: 'Siege already unlocked' };
+        throw { status: 409, message: "Siege already unlocked" };
     }
 
     const th = account.townHallLevel;
     const thConfig = itemsByTownHall?.[th];
     if (!thConfig || !Array.isArray(thConfig.sieges)) {
-        throw { status: 400, message: `No siege configuration for Town Hall ${th}` };
+        throw {
+            status: 400,
+            message: `No siege configuration for Town Hall ${th}`,
+        };
     }
-    const normalizeKey = (s = '') => s.toString().replace(/[^a-z0-9]/gi, '').toLowerCase();
+    const normalizeKey = (s = "") =>
+        s
+            .toString()
+            .replace(/[^a-z0-9]/gi, "")
+            .toLowerCase();
     const targetKey = normalizeKey(normalizedType);
-    const siegeEntry = thConfig.sieges.find(s => normalizeKey(s.siegeName) === targetKey);
+    const siegeEntry = thConfig.sieges.find(
+        (s) => normalizeKey(s.siegeName) === targetKey
+    );
     if (!siegeEntry) {
         throw {
             status: 404,
-            message: 'Siege not available at this Town Hall',
-            availableSieges: thConfig.sieges.map(s => s.siegeName)
+            message: "Siege not available at this Town Hall",
+            availableSieges: thConfig.sieges.map((s) => s.siegeName),
         };
     }
 
@@ -48,7 +62,7 @@ export async function unlockSiegeService({ accountId, input }) {
         siegeType: normalizedType,
         currentLevel: 0,
         maxLevel: derivedMaxLevel,
-        account: accountId
+        account: accountId,
     });
 
     // Maintain reference if schema needs it
@@ -64,9 +78,46 @@ export function getSiegeUpgradeStatusService(siege) {
     return computeUpgradeStatus(siege);
 }
 
-export async function startSiegeUpgradeService(siegeId, upgradeTimeSec, upgradeCost) {
+export async function updateBuildingUpgradeTimeService(id, { upgradeTime }) {
+    if (upgradeTime === undefined || upgradeTime === null) {
+        const err = new Error("upgradeTime is required");
+        err.status = 400;
+        throw err;
+    }
+    const siege = await Siege.findById(id);
+    if (!siege) {
+        const err = new Error("Building not found");
+        err.status = 404;
+        throw err;
+    }
+    if (siege.status !== "Upgrading") {
+        const err = new Error("Building is not currently upgrading");
+        err.status = 400;
+        throw err;
+    }
+
+    const durationMs = Number(upgradeTime) * 1000;
+    if (!Number.isFinite(durationMs) || durationMs < 0) {
+        const err = new Error("upgradeTime must be a non-negative number");
+        err.status = 400;
+        throw err;
+    }
+
+    const startTime = siege.upgradeStartTime || new Date();
+    siege.upgradeStartTime = startTime;
+    siege.upgradeEndTime = new Date(startTime.getTime() + durationMs);
+    siege.upgradeTime = Number(upgradeTime);
+    await siege.save();
+    return siege;
+}
+
+export async function startSiegeUpgradeService(
+    siegeId,
+    upgradeTimeSec,
+    upgradeCost
+) {
     const siege = await Siege.findById(siegeId);
-    if (!siege) throw new Error('Siege not found');
+    if (!siege) throw new Error("Siege not found");
 
     return await startUpgrade(siege, upgradeTimeSec, upgradeCost);
 }
@@ -74,11 +125,14 @@ export async function startSiegeUpgradeService(siegeId, upgradeTimeSec, upgradeC
 export async function finishSiegeUpgradeService(siegeId) {
     const siege = await Siege.findById(siegeId);
     if (!siege) {
-        throw { status: 404, message: 'Siege not found' };
+        throw { status: 404, message: "Siege not found" };
     }
 
     if (!canFinishUpgrade(siege)) {
-        throw { status: 400, message: 'No active upgrade or upgrade not finished yet' };
+        throw {
+            status: 400,
+            message: "No active upgrade or upgrade not finished yet",
+        };
     }
 
     const updatedSiege = finishUpgrade(siege);
@@ -89,14 +143,14 @@ export async function finishSiegeUpgradeService(siegeId) {
 export async function cancelSiegeUpgradeService(siegeId) {
     const siege = await Siege.findById(siegeId);
     if (!siege) {
-        throw { status: 404, message: 'Siege not found' };
+        throw { status: 404, message: "Siege not found" };
     }
 
-    if (siege.status !== 'Upgrading') {
-        throw { status: 400, message: 'Siege not currently upgrading' };
+    if (siege.status !== "Upgrading") {
+        throw { status: 400, message: "Siege not currently upgrading" };
     }
 
-    siege.status = 'Idle';
+    siege.status = "Idle";
     siege.upgradeStartTime = null;
     siege.upgradeEndTime = null;
     siege.upgradeCost = 0;

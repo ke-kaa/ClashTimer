@@ -12,6 +12,7 @@ import {
     startSiegeUpgrade,
     finishSiegeUpgrade,
     cancelSiegeUpgrade,
+    updateSiegeUpgradeTimeController,
 } from "../controllers/siegeController.js";
 
 const router = Router();
@@ -70,6 +71,13 @@ router.post(
     requireAuth,
     ensureSiegeOwnershipFromParam("id"),
     cancelSiegeUpgrade
+);
+
+router.post(
+    "/:accountId/:id/upgrade/update",
+    requireAuth,
+    ensureSiegeOwnershipFromParam("id"),
+    updateSiegeUpgradeTimeController
 );
 
 export default router;
