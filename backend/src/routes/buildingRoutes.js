@@ -22,6 +22,7 @@ import {
     getReadyBuildings,
     getBuildingUpgradeProgress,
     getBuildingStats,
+    updateBuildingUpgradeTimeController,
 } from "../controllers/buildingController.js";
 
 const router = Router();
@@ -83,7 +84,7 @@ router.patch(
 );
 
 // POST /api/buildings/:id/upgrade/start ----
-router.post(
+router.pupgradCostost(
     ":accountId/:id/upgrade/start",
     requireAuth,
     ensureBuildingOwnershipFromParam("id"),
@@ -99,6 +100,13 @@ router.post(
 );
 
 // POST /api/buildings/:id/upgrade/cancel ----
+router.post(
+    "/:accountId/:id/upgrade/update",
+    requireAuth,
+    ensureBuildingOwnershipFromParam("id"),
+    updateBuildingUpgradeTimeController
+);
+
 router.post(
     "/:accountId/:id/upgrade/cancel",
     requireAuth,

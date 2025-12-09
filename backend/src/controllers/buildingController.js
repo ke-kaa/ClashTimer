@@ -15,9 +15,22 @@ import {
     getReadyBuildingsService,
     getBuildingUpgradeProgressService,
     getBuildingStatsService,
+    updateBuildingUpgradeTimeService,
 } from "../services/buildingService.js";
 
 // getAllBuildings removed: use account-scoped endpoints
+export async function updateBuildingUpgradeTimeController(req, res) {
+    try {
+        const { id } = req.params;
+        const { upgradeTime } = req.body;
+        const building = await updateBuildingUpgradeTimeService(id, {
+            upgradeTime,
+        });
+        return res.json(building);
+    } catch (error) {
+        return res.status(error.status || 500).json({ error: error.message });
+    }
+}
 
 export async function getBuildingById(req, res) {
     try {
