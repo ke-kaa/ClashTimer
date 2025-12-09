@@ -16,6 +16,7 @@ import {
     getHeroUpgradeProgress,
     validateHeroUpgrade,
     getTopHeroes,
+    updateHeroUpgradeTimeController,
 } from "../controllers/heroController.js";
 
 const router = Router();
@@ -82,6 +83,13 @@ router.post(
     requireAuth,
     ensureHeroOwnershipFromParam("id"),
     cancelHeroUpgrade
+);
+
+router.post(
+    "/:accountId/:id/upgrade/update",
+    requireAuth,
+    ensureHeroOwnershipFromParam("id"),
+    updateHeroUpgradeTimeController
 );
 
 // GET /api/heroes/:id/upgrade/status ----

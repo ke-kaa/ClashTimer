@@ -9,8 +9,9 @@ import {
     getHeroesByStatusService,
     getHeroUpgradeProgressService,
     validateHeroUpgradeService,
-    getTopHeroesService
-} from '../services/heroService.js';
+    getTopHeroesService,
+    updateHeroUpgradeTimeService,
+} from "../services/heroService.js";
 
 function handleError(res, error) {
     return res.status(error.status || 500).json({ error: error.message });
@@ -27,7 +28,10 @@ export async function getAllHeroes(req, res) {
 
 export async function getHeroesByAccount(req, res) {
     try {
-        const heroes = await getHeroesByAccountService(req.user?.id, req.params.accountId);
+        const heroes = await getHeroesByAccountService(
+            req.user?.id,
+            req.params.accountId
+        );
         return res.json(heroes);
     } catch (error) {
         return handleError(res, error);
@@ -45,7 +49,11 @@ export async function getHeroById(req, res) {
 
 export async function updateHeroLevel(req, res) {
     try {
-        const hero = await updateHeroLevelService(req.params.id, req.body.currentLevel, req.user?.id);
+        const hero = await updateHeroLevelService(
+            req.params.id,
+            req.body.currentLevel,
+            req.user?.id
+        );
         return res.json(hero);
     } catch (error) {
         return handleError(res, error);
@@ -54,7 +62,24 @@ export async function updateHeroLevel(req, res) {
 
 export async function startHeroUpgrade(req, res) {
     try {
-        const hero = await startHeroUpgradeService(req.params.id, req.body, req.user?.id);
+        const hero = await startHeroUpgradeService(
+            req.params.id,
+            req.body,
+            req.user?.id
+        );
+        return res.json(hero);
+    } catch (error) {
+        return handleError(res, error);
+    }
+}
+
+export async function updateHeroUpgradeTimeController(req, res) {
+    try {
+        const hero = await updateHeroUpgradeTimeService(
+            req.params.id,
+            req.body,
+            req.user?.id
+        );
         return res.json(hero);
     } catch (error) {
         return handleError(res, error);
@@ -63,7 +88,10 @@ export async function startHeroUpgrade(req, res) {
 
 export async function completeHeroUpgrade(req, res) {
     try {
-        const hero = await completeHeroUpgradeService(req.params.id, req.user?.id);
+        const hero = await completeHeroUpgradeService(
+            req.params.id,
+            req.user?.id
+        );
         return res.json(hero);
     } catch (error) {
         return handleError(res, error);
@@ -72,7 +100,10 @@ export async function completeHeroUpgrade(req, res) {
 
 export async function cancelHeroUpgrade(req, res) {
     try {
-        const hero = await cancelHeroUpgradeService(req.params.id, req.user?.id);
+        const hero = await cancelHeroUpgradeService(
+            req.params.id,
+            req.user?.id
+        );
         return res.json(hero);
     } catch (error) {
         return handleError(res, error);
@@ -81,7 +112,11 @@ export async function cancelHeroUpgrade(req, res) {
 
 export async function getHeroesByStatus(req, res) {
     try {
-        const heroes = await getHeroesByStatusService(req.params.status, req.query.accountId, req.user?.id);
+        const heroes = await getHeroesByStatusService(
+            req.params.status,
+            req.query.accountId,
+            req.user?.id
+        );
         return res.json(heroes);
     } catch (error) {
         return handleError(res, error);
@@ -90,7 +125,10 @@ export async function getHeroesByStatus(req, res) {
 
 export async function getHeroUpgradeProgress(req, res) {
     try {
-        const result = await getHeroUpgradeProgressService(req.params.id, req.user?.id);
+        const result = await getHeroUpgradeProgressService(
+            req.params.id,
+            req.user?.id
+        );
         return res.json(result);
     } catch (error) {
         return handleError(res, error);
@@ -99,7 +137,10 @@ export async function getHeroUpgradeProgress(req, res) {
 
 export async function validateHeroUpgrade(req, res) {
     try {
-        const result = await validateHeroUpgradeService(req.params.id, req.user?.id);
+        const result = await validateHeroUpgradeService(
+            req.params.id,
+            req.user?.id
+        );
         return res.json(result);
     } catch (error) {
         return handleError(res, error);
@@ -108,7 +149,10 @@ export async function validateHeroUpgrade(req, res) {
 
 export async function getTopHeroes(req, res) {
     try {
-        const heroes = await getTopHeroesService(req.params.accountId, req.user?.id);
+        const heroes = await getTopHeroesService(
+            req.params.accountId,
+            req.user?.id
+        );
         return res.json(heroes);
     } catch (error) {
         return handleError(res, error);

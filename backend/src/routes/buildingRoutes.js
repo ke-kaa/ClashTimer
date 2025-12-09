@@ -84,7 +84,7 @@ router.patch(
 );
 
 // POST /api/buildings/:id/upgrade/start ----
-router.pupgradCostost(
+router.post(
     ":accountId/:id/upgrade/start",
     requireAuth,
     ensureBuildingOwnershipFromParam("id"),
