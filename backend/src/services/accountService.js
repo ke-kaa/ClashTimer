@@ -602,7 +602,6 @@ export async function updateAccountDataFromPasteService(pastedData) {
     }
 }
 
-
 export async function updateAccountService({ userId, id, username, playerTag, townHallLevel, clanTag, preferences }) {
     const account = await Account.findOne({ _id: id, owner: userId });
 
@@ -991,15 +990,15 @@ function calculateAccountProgress(accountData = {}) {
 
     const toPercent = ({ current, max }) => (max ? (current / max) * 100 : 0);
 
-    console.log({
-        buildings: { ...buildings, percentage: toPercent(buildings) },
-        heroes: { ...heroes, percentage: toPercent(heroes) },
-        troops: { ...troops, percentage: toPercent(troops) },
-        pets: { ...pets, percentage: toPercent(pets) },
-        sieges: { ...sieges, percentage: toPercent(sieges) },
-        spells: { ...spells, percentage: toPercent(spells) },
-        walls
-    })
+    // console.log({
+    //     buildings: { ...buildings, percentage: toPercent(buildings) },
+    //     heroes: { ...heroes, percentage: toPercent(heroes) },
+    //     troops: { ...troops, percentage: toPercent(troops) },
+    //     pets: { ...pets, percentage: toPercent(pets) },
+    //     sieges: { ...sieges, percentage: toPercent(sieges) },
+    //     spells: { ...spells, percentage: toPercent(spells) },
+    //     walls
+    // })
 
     return {
         buildings: { ...buildings, percentage: Math.floor(toPercent(buildings)) },

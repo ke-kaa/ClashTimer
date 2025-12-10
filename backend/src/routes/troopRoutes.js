@@ -13,6 +13,7 @@ import {
     finishTroopUpgradeController,
     cancelTroopUpgradeController,
     getTroopUpgradeStatus,
+    updateTroopUpgradeTimeController,
 } from "../controllers/troopController.js";
 
 const router = Router();
@@ -74,6 +75,14 @@ router.post(
     ensureAccountAccessFromParam("accountId"),
     ensureTroopOwnershipFromParam("troopId"),
     cancelTroopUpgradeController
+);
+
+router.post(
+    "/:accountId/:troopId/upgrade/update",
+    requireAuth,
+    ensureAccountAccessFromParam("accountId"),
+    ensureTroopOwnershipFromParam("troopId"),
+    updateTroopUpgradeTimeController
 );
 
 // GET /api/troops/:id/upgrade/status

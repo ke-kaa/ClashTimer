@@ -7,6 +7,7 @@ import {
     finishTroopUpgradeService,
     cancelTroopUpgradeService,
     getTroopUpgradeStatusService,
+    updateTroopUpgradeTimeService,
 } from "../services/troopService.js";
 
 function handleError(res, error, fallbackMessage = "Request failed") {
@@ -70,6 +71,27 @@ export async function deleteTroopController(req, res) {
         return res.json({ message: "Troop deleted" });
     } catch (error) {
         return handleError(res, error, "Failed to delete troop");
+    }
+}
+
+export async function updateTroopUpgradeTimeController(req, res) {
+    try {
+        const accountId = getAccountId(req);
+        const troopId = req.params.troopId || req.body?.troopId;
+        const result = await updateTroopUpgradeTimeService(
+            getUserId(req),
+            accountId,
+            {
+                ...req.body,
+                troopId,
+            }
+        );
+        return res.json(result);
+    } catch (error) {
+        console.error("updateTroopUpgradeController error:", error);
+        return res
+            .status(error.status || 500)
+            .json({ error: error.message || "Failed to start troop upgrade" });
     }
 }
 

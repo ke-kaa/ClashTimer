@@ -13,6 +13,7 @@ import {
     finishSpellUpgradeController,
     cancelSpellUpgradeController,
     getSpellUpgradeStatus,
+    updateSpellUpgradeTimeController,
 } from "../controllers/spellController.js";
 
 const router = Router();
@@ -74,6 +75,14 @@ router.post(
     ensureAccountAccessFromParam("accountId"),
     ensureSpellOwnershipFromParam("spellId"),
     cancelSpellUpgradeController
+);
+
+router.post(
+    "/:accountId/:spellId/upgrade/update",
+    requireAuth,
+    ensureAccountAccessFromParam("accountId"),
+    ensureSpellOwnershipFromParam("spellId"),
+    updateSpellUpgradeTimeController
 );
 
 // GET /api/spells/:id/upgrade/status ----
