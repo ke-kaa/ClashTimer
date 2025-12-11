@@ -25,7 +25,12 @@ const slugify = (value = "") =>
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-export default function UpgradeTable({ accountId, category, items = [] }) {
+export default function UpgradeTable({
+    accountId,
+    category,
+    items = [],
+    onRefresh,
+}) {
     const hasItems = items.length > 0;
     const [iconsMap, setIconsMap] = useState({});
     const [loadingIcons, setLoadingIcons] = useState(false);
@@ -237,6 +242,7 @@ export default function UpgradeTable({ accountId, category, items = [] }) {
                                     activeTab={category}
                                     image={image}
                                     nextImage={nextImage}
+                                    onRefresh={onRefresh}
                                     {...item}
                                 />
                             );

@@ -7,6 +7,7 @@ import WallUpgradeCard from "../WallUpgradeCard/WallUpgradeCard";
 import { startWallUpgrade } from "../../../services/wallService";
 import ConfirmUpgradeCancel from "../ConfirmUpgradeCancel/ConfirmUpgradeCancel";
 import FinishUpgradeConfirm from "../FinishUpgradeCard/FinishUpgradeConfirm";
+import EditUpgradeTime from "../EditUpgradeTime/EditUpgradeTime";
 
 export default function UpgradeRow({
     accountId,
@@ -14,6 +15,7 @@ export default function UpgradeRow({
     itemId,
     image,
     nextImage,
+    onRefresh,
     currentLevel,
     maxLevel,
     nextLevel,
@@ -31,6 +33,7 @@ export default function UpgradeRow({
     const [nowTs, setNowTs] = useState(Date.now());
     const [showUpgraceCancelCard, setShowUpgradeCancelCard] = useState(false);
     const [showFinishCard, setShowFinishCard] = useState(false);
+    const [showEditUpgradeCard, setShowEditUpgradeCard] = useState(false);
 
     const isUpgrading = status === "Upgrading";
 
@@ -100,6 +103,19 @@ export default function UpgradeRow({
 
     const remainingTime = computeRemainingTime();
 
+    const totalMinutes = Math.floor(remainingTime / 1000 / 60);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const daysR = Math.floor(totalHours / 24);
+
+    const hoursR = totalHours % 24;
+    const minutesR = totalMinutes % 60;
+
+    const remainingDuration = {
+        days: daysR,
+        hours: hoursR,
+        minutesR: minutesR,
+    };
+
     function formatRemaining(ms) {
         if (ms <= 0) return "0h 0m";
 
@@ -119,14 +135,24 @@ export default function UpgradeRow({
 
     const dynamicProgress = computeProgress();
 
-    const handleUpgradeConfirm = (accountId, category, upgradeTime) => {
-        upgradeService.start(accountId, category, itemId, { upgradeTime });
-        setShowUpgradeCard(false);
+    const handleUpgradeConfirm = async (accountId, category, upgradeTime) => {
+        try {
+            await upgradeService.start(accountId, category, itemId, {
+                upgradeTime,
+            });
+            onRefresh?.();
+        } finally {
+            setShowUpgradeCard(false);
+        }
     };
 
-    const handleUpgradeCancel = () => {
-        upgradeService.cancel(accountId, activeTab, itemId);
-        setShowUpgradeCancelCard(false);
+    const handleUpgradeCancel = async () => {
+        try {
+            await upgradeService.cancel(accountId, activeTab, itemId);
+            onRefresh?.();
+        } finally {
+            setShowUpgradeCancelCard(false);
+        }
     };
 
     const handleWallUpgradeConfirm = async ({ count }) => {
@@ -142,9 +168,24 @@ export default function UpgradeRow({
         }
     };
 
-    const handleUpgradeFinish = () => {
-        upgradeService.finish(accountId, activeTab, itemId);
-        setShowFinishCard(false);
+    const handleUpgradeFinish = async () => {
+        try {
+            await upgradeService.finish(accountId, activeTab, itemId);
+            onRefresh?.();
+        } finally {
+            setShowFinishCard(false);
+        }
+    };
+
+    const handleEditUpgradeTime = async (upgradeTime) => {
+        try {
+            await upgradeService.update(accountId, activeTab, itemId, {
+                upgradeTime,
+            });
+            onRefresh?.();
+        } finally {
+            setShowEditUpgradeCard(false);
+        }
     };
 
     const handleCancelUpgradeCard = () => setShowUpgradeCard(false);
@@ -222,7 +263,10 @@ export default function UpgradeRow({
                                 >
                                     <FaCheck />
                                 </button>
-                                <button className="text-gray-400 hover:text-white transition-colors">
+                                <button
+                                    onClick={() => setShowEditUpgradeCard(true)}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
                                     <FaGear />
                                 </button>
                             </div>
@@ -252,7 +296,22 @@ export default function UpgradeRow({
                         <div className="fixed inset-0 z-50 flex items-center justify-center">
                             <FinishUpgradeConfirm
                                 onFinish={handleUpgradeFinish}
-                                onClose={() => setShowFinishCard(false)}
+                                onClose={() => setShowEditUpgradeCard(false)}
+                            />
+                        </div>
+                    </>
+                )}
+                {showEditUpgradeCard && (
+                    <>
+                        <div
+                            className="fixed inset-0 bg-black/60 z-40 "
+                            onClick={() => setShowFinishCard(false)}
+                        />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            <EditUpgradeTime
+                                currentDuration={remainingDuration}
+                                onEdit={handleEditUpgradeTime}
+                                onClose={() => setShowEditUpgradeCard(false)}
                             />
                         </div>
                     </>
