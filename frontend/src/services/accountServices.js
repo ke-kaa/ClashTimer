@@ -55,7 +55,6 @@ export const getVillageForDetailPage = async function (playerTag) {
 export const sendVillagePasteData = async function (playerData) {
     try {
         const response = await apiClient.post("/accounts/paste", playerData);
-        console.log("account data being sent from the ront end");
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: "Unknown error occurred." };
