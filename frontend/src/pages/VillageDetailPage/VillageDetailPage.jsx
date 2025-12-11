@@ -72,6 +72,10 @@ export default function VillageDetailPage() {
         }
     }, [playerTag]);
 
+    const handleRefresh = useCallback(async () => {
+        await fetchVillageDetail();
+    }, [fetchVillageDetail]);
+
     useEffect(() => {
         fetchVillageDetail();
     }, [fetchVillageDetail]);
@@ -220,6 +224,7 @@ export default function VillageDetailPage() {
                         accountId={accountId}
                         category={activeTab}
                         items={itemsForActiveTab}
+                        onRefresh={handleRefresh}
                     />
 
                     {statusMessage && (
